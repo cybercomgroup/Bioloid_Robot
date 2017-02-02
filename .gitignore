@@ -1,2 +1,7 @@
 *.o
 .metadata
+*.bin
+*.elf
+*.elf.map
+*.hex
+*.lss
