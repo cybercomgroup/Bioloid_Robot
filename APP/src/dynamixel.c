@@ -297,7 +297,7 @@ int dxl_get_highbyte( int word )
 	return (int)temp;
 }
 
-void dxl_ping( int id )
+int dxl_ping( int id )
 {
 	while(giBusUsing);
 
@@ -306,6 +306,18 @@ void dxl_ping( int id )
 	gbInstructionPacket[LENGTH] = 2;
 	
 	dxl_txrx_packet();
+
+	if (gbCommStatus == COMM_RXSUCCESS)
+	{
+		// return the error code
+		return (int)gbStatusPacket[ERRBIT];
+	// check if servo exists (via timeout)
+	} else if( gbCommStatus == COMM_RXTIMEOUT )
+	{
+		return -1;
+	} else {
+		return 0;
+	}
 }
 
 int dxl_read_byte( int id, int address )
@@ -323,7 +335,7 @@ int dxl_read_byte( int id, int address )
 	return (int)gbStatusPacket[PARAMETER];
 }
 
-void dxl_write_byte( int id, int address, int value )
+int dxl_write_byte( int id, int address, int value )
 {
 	while(giBusUsing);
 
@@ -334,6 +346,8 @@ void dxl_write_byte( int id, int address, int value )
 	gbInstructionPacket[LENGTH] = 4;
 	
 	dxl_txrx_packet();
+
+	return gbCommStatus;
 }
 
 int dxl_read_word( int id, int address )
@@ -354,7 +368,7 @@ int dxl_read_word( int id, int address )
 	return dxl_makeword((int)gbStatusPacket[PARAMETER], (int)gbStatusPacket[PARAMETER+1]);
 }
 
-void dxl_write_word( int id, int address, int value )
+int dxl_write_word( int id, int address, int value )
 {
 	while(giBusUsing);
 
@@ -366,4 +380,6 @@ void dxl_write_word( int id, int address, int value )
 	gbInstructionPacket[LENGTH] = 5;
 	
 	dxl_txrx_packet();
+
+	return gbCommStatus;
 }
