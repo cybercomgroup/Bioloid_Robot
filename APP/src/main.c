@@ -91,6 +91,10 @@ void StartDiscount(s32);
 byte CheckTimeOut(void);
 void sputc(void*, char);
 
+uint16 pose[NUM_AX12_SERVOS] = {235,788,279,744,462,561,358,666,507,516,341,682,240,783,647,376,507,516};
+uint16 speeds[NUM_AX12_SERVOS];
+const uint8 ids[]  = {1};
+
 /*******************************************************************************
 * Function Name  : main
 * Description    : Main program
@@ -100,9 +104,8 @@ void sputc(void*, char);
 *******************************************************************************/
 int main(void)
 {
-	const uint8 ids[]  = {1};
-	uint16 pose[NUM_AX12_SERVOS] = {235,788,279,744,462,561,358,666,507,516,341,682,240,783,647,376,507,516};
-	uint16 speeds[NUM_AX12_SERVOS];
+	int res;
+
 	/* Setup minimal printf to send to serial console. */
 	init_printf(0, sputc);
 
@@ -119,54 +122,60 @@ int main(void)
 
 	Timer_Configuration();
 
-	dxl_initialize( 0, 1 );
-	USART_Configuration(USART_PC, Baudrate_PC);
+	if (0) {
+		dxl_initialize(0,1); // low level init fn, just tries to init without pinging DXLs.
+	} else {
+		i = 0;
+		res = dxl_init1( 1, 3 ); // high level init fn, pings the DXLs to check their status
+		// try 3 times then abort.
+		while (res != 0){
+			if (i == 3) {
+				printf("DXL init failed, aborting.\r\n");
+				return 0;
+			} else {
+				i++;
+				printf("DXL init failed, retrying (%i)...\r\n", i);
+				mDelay(500);
+				res = dxl_init( 1 );
+			}
+		}
+	}
+
 
 	for( i=0; i<NUM_ACTUATOR; i++ )
 	{
 		id[i] = i+1;
 	}
 
-	/*
+
 	// Set goal speed
 	dxl_write_word( BROADCAST_ID, P_GOAL_SPEED_L, 26); // goal speed must be between 26 and 1023, other values default to max speed
 	// Set goal position
-	dxl_write_word( BROADCAST_ID, P_GOAL_POSITION_L, AmpPos );
+	dxl_write_word( 1, P_GOAL_POSITION_L, AmpPos );
 	mDelay(1000);
-*/
-	printf("Moving to default pose.\r\n");
-	//const uint8 ids[]  = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18};
 
-
-	printf("Moving to default pose 2.\r\n");
-
-	//uint16 pose[1] = {235};
-
-	printf("Moving to default pose 3.\r\n");
-
+	//printf("Moving to default pose.\r\n");
 	//for (i=0;i< NUM_AX12_SERVOS; i++ )
 	//	pose[i] = current_pose[i];
 	//pose[0] = 235;
 
-
-	printf("Moving to default pose 4.\r\n");
-
 	//moveToGoalPose(1000, pose, 0);
-
-	//int comSt = moveToGoalPose(2000, pose, 1);
-	printf("done");
+	//printf("done\r\n");
 	//return 0;
 //	printf("dbg goal speed: %d %d %d \r\n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
 
 	for (i=0;i< NUM_AX12_SERVOS; i++ )
 		speeds[i] = 100;
 
-	printf("goal speed2: %d\r\n", speeds[0]);
+	//printf("goal speed2: %d\r\n", speeds[0]);
 	//printf("speeds  %d %d %d \r\n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
-	//int comSt = dxl_set_goal_speed(NUM_AX12_SERVOS, AX12_IDS, pose, speeds);
-	//int comSt = dxl_set_goal_speed(1, ids, pose, speeds);
-	moveToDefaultPose();
+	//dxl_set_goal_speed(NUM_AX12_SERVOS, AX12_IDS, pose, speeds);
+	dxl_set_goal_speed(1, ids, pose, speeds);
+	//moveToDefaultPose();
 	//printf("Moving to default pose done! commstatus %d\r\n", comSt);
+	mDelay(1000);
+
+	printf("Program finished. Have a nice day!\r\n");
 
 	return 0;
 
@@ -525,6 +534,8 @@ void TxDByte16(byte bSentData)
 	TxDByte_PC(bTmp);
 }
 
+/* Put a character to the serial terminal.
+ * Used in the custom printf function. */
 void sputc ( void* p, char c)
 {
 	TxDByte_PC(c);
@@ -589,63 +600,4 @@ u8 CheckTimeOut(void)
 		return 0;
 }
 
-// Print communication result
-void PrintCommStatus(int CommStatus)
-{
-	switch(CommStatus)
-	{
-	case COMM_TXFAIL:
-		TxDString("COMM_TXFAIL: Failed transmit instruction packet!\n");
-		break;
-
-	case COMM_TXERROR:
-		TxDString("COMM_TXERROR: Incorrect instruction packet!\n");
-		break;
-
-	case COMM_RXFAIL:
-		TxDString("COMM_RXFAIL: Failed get status packet from device!\n");
-		break;
-
-	case COMM_RXWAITING:
-		TxDString("COMM_RXWAITING: Now recieving status packet!\n");
-		break;
-
-	case COMM_RXTIMEOUT:
-		TxDString("COMM_RXTIMEOUT: There is no status packet!\n");
-		break;
-
-	case COMM_RXCORRUPT:
-		TxDString("COMM_RXCORRUPT: Incorrect status packet!\n");
-		break;
-
-	default:
-		TxDString("This is unknown error code!\n");
-		break;
-	}
-}
-
-// Print error bit of status packet
-void PrintErrorCode()
-{
-	if(dxl_get_rxpacket_error(ERRBIT_VOLTAGE) == 1)
-		TxDString("Input voltage error!\n");
-
-	if(dxl_get_rxpacket_error(ERRBIT_ANGLE) == 1)
-		TxDString("Angle limit error!\n");
-
-	if(dxl_get_rxpacket_error(ERRBIT_OVERHEAT) == 1)
-		TxDString("Overheat error!\n");
-
-	if(dxl_get_rxpacket_error(ERRBIT_RANGE) == 1)
-		TxDString("Out of range error!\n");
-
-	if(dxl_get_rxpacket_error(ERRBIT_CHECKSUM) == 1)
-		TxDString("Checksum error!\n");
-
-	if(dxl_get_rxpacket_error(ERRBIT_OVERLOAD) == 1)
-		TxDString("Overload error!\n");
-
-	if(dxl_get_rxpacket_error(ERRBIT_INSTRUCTION) == 1)
-		TxDString("Instruction code error!\n");
-}
 

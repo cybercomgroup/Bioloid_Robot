@@ -99,7 +99,9 @@ extern "C" {
 
 
 // Use dxl_init as the top level initialization method
-void dxl_init(int baudnum);
+int dxl_init(int baudnum);
+int dxl_init1(int baudnum, int maxRetiresPerDXL);
+
 // called by dxl_init
 int dxl_initialize( int devIndex, int baudnum );
 void dxl_terminate();

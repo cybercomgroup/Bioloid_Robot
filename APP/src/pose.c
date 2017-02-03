@@ -201,10 +201,12 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 	// only wait for pose to finish if requested to do so
 	if( wait_flag == 1 )
 	{
-		printf("waiting for finish\r\n");
+		printf("waiting for finish...");
 		// wait for the movement to finish
 		waitForPoseFinish();
-	
+
+		printf(" done!\r\n");
+
 		// check that we didn't cause any alarms
 		for (i=0; i<NUM_AX12_SERVOS; i++) {
 			// ping the servo and unpack error code (if any)
@@ -215,13 +217,15 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 				printf("\nmoveToGoalPose Alarm ID%i - Error Code %i\n", AX12_IDS[i], errorStatus);
 				return 1;
 			}
-		}	
+		}
+		printf("moveToGoalPose: all ok, read back current pose.\r\n");
 		// all ok, read back current pose
 		readCurrentPose(READ_ALL, 0);	
 	}	
 	return 0;
 }
 
+// todo is a debug function
 uint16*  moveToGoalPoseDebug(uint16 time, const uint16 goal[], uint8 wait_flag)
 {
     int i;

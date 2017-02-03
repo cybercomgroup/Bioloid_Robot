@@ -29,6 +29,8 @@
  * OF SUCH DAMAGE.
  */
 
+/* Modified to include %i as well as %d format. Anton Olsson / Cybercom */
+
 #include "printf.h"
 
 typedef void (*putcf) (void*,char);
@@ -176,7 +178,7 @@ void tfp_format(void* putp,putcf putf,char *fmt, va_list va)
 					putchw(putp,putf,w,lz,bf);
 					break;
 					}
-				case 'd' :  {
+				case 'i': case 'd' :
 #ifdef 	PRINTF_LONG_SUPPORT
 					if (lng)
 						li2a(va_arg(va, unsigned long int),bf);
@@ -185,7 +187,7 @@ void tfp_format(void* putp,putcf putf,char *fmt, va_list va)
 					i2a(va_arg(va, int),bf);
 					putchw(putp,putf,w,lz,bf);
 					break;
-					}
+
 				case 'x': case 'X' : 
 #ifdef 	PRINTF_LONG_SUPPORT
 					if (lng)

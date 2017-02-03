@@ -58,10 +58,14 @@ int gbCommStatus = COMM_RXSUCCESS;
 int giBusUsing = 0;
 
 
+int dxl_init(int baudnum) {
+	dxl_init1(baudnum, 0);
+}
+
 // High level initialization - specific robot settings for Bioloid
-void dxl_init(int baudnum)
+int dxl_init1(int baudnum, int maxRetriesPerDxl)
 {
-	int commStatus = 0, errorStatus = 0, i;
+	int commStatus = 0, errorStatus = 0, i, retriesDxl = 0;
 
 	// now prepare the Dynamixel servos
 	// first initialize the bus
@@ -74,11 +78,30 @@ void dxl_init(int baudnum)
 	{
 		// ping each servo in turn
 		errorStatus = dxl_ping(AX12_IDS[i]);
-		if (errorStatus == -1)
-		{
-			printf("\nHardware Configuration Failure at Dynamixel ID %i.\n", AX12_IDS[i]);
-			dxl_terminate();
-			return;
+
+		if (errorStatus == -1 || gbCommStatus != COMM_RXSUCCESS) {
+			if (errorStatus == -1) {
+				// timed out
+				printf("Hardware Configuration Failure at Dynamixel ID %d (timed out).\r\n", AX12_IDS[i]);
+			} else {
+				// got a response packet, but with an error code.
+				printf("Failure in ping response: ");
+				dxl_printCommStatus(gbCommStatus);
+			}
+
+			if (retriesDxl >= maxRetriesPerDxl) {
+				dxl_terminate();
+				return -1;
+			} else {
+				// delay 100 ms and try again on the same id.
+				retriesDxl++;
+				i--;
+				printf("Retrying..\r\n");
+				_delay_ms(100);
+			}
+		} else {
+			// servo seems ok.
+			retriesDxl = 0;
 		}
 	}
 
@@ -123,6 +146,10 @@ void dxl_init(int baudnum)
 		dxl_printCommStatus(dxl_get_result());
 	}
 	_delay_ms(50);
+
+	printf("\nDXL initialization ok.\r\n");
+
+	return 0;
 }
 
 // Initialize communication
@@ -441,17 +468,21 @@ int dxl_ping( int id )
 	gbInstructionPacket[INSTRUCTION] = INST_PING;
 	gbInstructionPacket[LENGTH] = 2;
 	
+	//printf("Sending ping to dxl %d\r\n", id);
 	dxl_txrx_packet();
 
 	if (gbCommStatus == COMM_RXSUCCESS)
 	{
+		//printf("Sending ping to dxl %d success: %d\r\n", id, (int)gbStatusPacket[ERRBIT]);
 		// return the error code
 		return (int)gbStatusPacket[ERRBIT];
 	// check if servo exists (via timeout)
 	} else if( gbCommStatus == COMM_RXTIMEOUT )
 	{
+		//printf("Sending ping to dxl %d timed out\r\n", id);
 		return -1;
 	} else {
+		//printf("Sending ping to dxl %d failed. comStatus: %d\r\n", id, gbCommStatus);
 		return 0;
 	}
 }
