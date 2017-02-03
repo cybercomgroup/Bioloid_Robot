@@ -61,7 +61,7 @@ int giBusUsing = 0;
 // High level initialization - specific robot settings for Bioloid
 void dxl_init(int baudnum)
 {
-	int commStatus = 0, errorStatus = 0;
+	int commStatus = 0, errorStatus = 0, i;
 
 	// now prepare the Dynamixel servos
 	// first initialize the bus
@@ -70,7 +70,7 @@ void dxl_init(int baudnum)
 	_delay_ms(100);
 
 	// Next check the hardware configuration is valid
-	for (int i=0; i<NUM_AX12_SERVOS; i++)
+	for (i=0; i<NUM_AX12_SERVOS; i++)
 	{
 		// ping each servo in turn
 		errorStatus = dxl_ping(AX12_IDS[i]);

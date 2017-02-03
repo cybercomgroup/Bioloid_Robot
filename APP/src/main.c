@@ -91,10 +91,6 @@ void StartDiscount(s32);
 byte CheckTimeOut(void);
 void sputc(void*, char);
 
-
-uint16 pose[NUM_AX12_SERVOS] = {235,788,279,744,462,561,358,666,507,516,341,682,240,783,647,376,507,516};
-uint16 speeds[NUM_AX12_SERVOS];
-
 /*******************************************************************************
 * Function Name  : main
 * Description    : Main program
@@ -104,6 +100,9 @@ uint16 speeds[NUM_AX12_SERVOS];
 *******************************************************************************/
 int main(void)
 {
+	const uint8 ids[]  = {1};
+	uint16 pose[NUM_AX12_SERVOS] = {235,788,279,744,462,561,358,666,507,516,341,682,240,783,647,376,507,516};
+	uint16 speeds[NUM_AX12_SERVOS];
 	/* Setup minimal printf to send to serial console. */
 	init_printf(0, sputc);
 
@@ -140,7 +139,7 @@ int main(void)
 
 
 	printf("Moving to default pose 2.\r\n");
-	const uint8 ids[]  = {1};
+
 	//uint16 pose[1] = {235};
 
 	printf("Moving to default pose 3.\r\n");
@@ -154,23 +153,23 @@ int main(void)
 
 	//moveToGoalPose(1000, pose, 0);
 
-	int comSt = moveToGoalPose(2000, pose, 1);
+	//int comSt = moveToGoalPose(2000, pose, 1);
 	printf("done");
-	return 0;
+	//return 0;
 //	printf("dbg goal speed: %d %d %d \r\n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
-/*
+
 	for (i=0;i< NUM_AX12_SERVOS; i++ )
 		speeds[i] = 100;
 
 	printf("goal speed2: %d\r\n", speeds[0]);
 	//printf("speeds  %d %d %d \r\n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
-	int comSt = dxl_set_goal_speed(NUM_AX12_SERVOS, AX12_IDS, pose, speeds);
+	//int comSt = dxl_set_goal_speed(NUM_AX12_SERVOS, AX12_IDS, pose, speeds);
 	//int comSt = dxl_set_goal_speed(1, ids, pose, speeds);
-	//moveToDefaultPose();
-	printf("Moving to default pose done! commstatus %d\r\n", comSt);
+	moveToDefaultPose();
+	//printf("Moving to default pose done! commstatus %d\r\n", comSt);
 
 	return 0;
-*/
+
 	GoalPos = 512;
 
 	//while(1)

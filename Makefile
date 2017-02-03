@@ -1,7 +1,7 @@
 # setup
 # modified by zerom for WinARM 8/2010
 
-COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -Wall -g -Os -fno-common -std=gnu99
+COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -Wall -g -Os -fno-common
 INCLUDE_DIRS = -I. -Istm32f10x_lib/inc -IHW/inc -IAPP/inc 
 
 LIBRARY_DIRS = -Lstm32f10x_lib

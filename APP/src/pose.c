@@ -42,17 +42,18 @@ uint16 goal_speed[NUM_AX12_SERVOS];
 //			(uint8)		current step
 void readCurrentPose(uint8 read_mode, uint8 step)
 {
+	int i;
 	if (read_mode == READ_ALL)
 	{
 		// loop over all possible actuators
-		for(int i=0; i<NUM_AX12_SERVOS; i++) {
+		for(i=0; i<NUM_AX12_SERVOS; i++) {
 			current_pose[i] = dxl_read_word( AX12_IDS[i], DXL_PRESENT_POSITION_L );
 		}
 	} 
 	else
 	{
 		// read only the servos that moved in this step
-		for(int i=0; i<NUM_AX12_SERVOS; i++) {
+		for(i=0; i<NUM_AX12_SERVOS; i++) {
 			if ( motion_step_servos_moving[step][i] > 0 )
 			{
 				current_pose[i] = dxl_read_word( AX12_IDS[i], DXL_PRESENT_POSITION_L );
@@ -65,8 +66,10 @@ void readCurrentPose(uint8 read_mode, uint8 step)
 // Function to wait out any existing servo movement
 void waitForPoseFinish()
 {
-	uint8 still_moving[NUM_AX12_SERVOS], moving_flag = 0;
+	uint8 still_moving[NUM_AX12_SERVOS];
+	uint8 moving_flag = 0;
 	uint8 first_loop = 0;
+	int i;
 	
 	first_loop = 0;
 	// keep looping over all possible actuators until done
@@ -75,7 +78,7 @@ void waitForPoseFinish()
 		// reset the flag
 		moving_flag = 0;
 		
-		for (int i=0; i<NUM_AX12_SERVOS; i++) {
+		for (i=0; i<NUM_AX12_SERVOS; i++) {
 			// keep reading the moving state of servos 
 			if( first_loop == 0 || still_moving[i] == 1) {
 				still_moving[i] = dxl_read_byte( AX12_IDS[i], DXL_MOVING );
@@ -92,10 +95,12 @@ void waitForPoseFinish()
 // The AX-12 manual states this as the 'no load speed' at 12V
 // The Moving Speed control table entry states that 0x3FF = 114rpm
 // and according to Robotis this means 0x212 = 59rpm and anything greater 0x212 is also 59rpm
+
 void calculatePoseServoSpeeds(uint16 time)
 {
     int i;
-	uint16 travel[NUM_AX12_SERVOS], temp_goal;
+	uint16  temp_goal;
+	uint16 travel[NUM_AX12_SERVOS];
 	uint32 factor;
 
 	// read the current pose only if we are not walking (no time)
