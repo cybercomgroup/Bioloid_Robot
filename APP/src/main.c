@@ -13,6 +13,7 @@
 #include "dynamixel.h"
 #include "dxl_hal.h"
 #include "printf.h"
+#include "pose.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -90,6 +91,10 @@ void StartDiscount(s32);
 byte CheckTimeOut(void);
 void sputc(void*, char);
 
+
+uint16 pose[NUM_AX12_SERVOS] = {235,788,279,744,462,561,358,666,507,516,341,682,240,783,647,376,507,516};
+uint16 speeds[NUM_AX12_SERVOS];
+
 /*******************************************************************************
 * Function Name  : main
 * Description    : Main program
@@ -100,7 +105,7 @@ void sputc(void*, char);
 int main(void)
 {
 	/* Setup minimal printf to send to serial console. */
-	//init_printf(0, sputc);
+	init_printf(0, sputc);
 
     /* System Clocks Configuration */
 	RCC_Configuration();
@@ -123,14 +128,49 @@ int main(void)
 		id[i] = i+1;
 	}
 
+	/*
 	// Set goal speed
 	dxl_write_word( BROADCAST_ID, P_GOAL_SPEED_L, 26); // goal speed must be between 26 and 1023, other values default to max speed
 	// Set goal position
 	dxl_write_word( BROADCAST_ID, P_GOAL_POSITION_L, AmpPos );
 	mDelay(1000);
+*/
+	printf("Moving to default pose.\r\n");
+	//const uint8 ids[]  = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18};
+
+
+	printf("Moving to default pose 2.\r\n");
+	const uint8 ids[]  = {1};
+	//uint16 pose[1] = {235};
+
+	printf("Moving to default pose 3.\r\n");
+
+	//for (i=0;i< NUM_AX12_SERVOS; i++ )
+	//	pose[i] = current_pose[i];
+	//pose[0] = 235;
+
+
+	printf("Moving to default pose 4.\r\n");
+
+	//moveToGoalPose(1000, pose, 0);
+
+	int comSt = moveToGoalPose(2000, pose, 1);
+	printf("done");
+	return 0;
+//	printf("dbg goal speed: %d %d %d \r\n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
+/*
+	for (i=0;i< NUM_AX12_SERVOS; i++ )
+		speeds[i] = 100;
+
+	printf("goal speed2: %d\r\n", speeds[0]);
+	//printf("speeds  %d %d %d \r\n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
+	int comSt = dxl_set_goal_speed(NUM_AX12_SERVOS, AX12_IDS, pose, speeds);
+	//int comSt = dxl_set_goal_speed(1, ids, pose, speeds);
+	//moveToDefaultPose();
+	printf("Moving to default pose done! commstatus %d\r\n", comSt);
 
 	return 0;
-
+*/
 	GoalPos = 512;
 
 	//while(1)

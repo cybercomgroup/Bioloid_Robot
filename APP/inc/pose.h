@@ -28,6 +28,16 @@
 #define READ_ALL					1
 #define READ_MOVING					0
 
+// global hardware definition variables
+extern const uint8 AX12Servos[MAX_AX12_SERVOS];
+extern const uint8 AX12_IDS[NUM_AX12_SERVOS];
+// should keep the current pose in a global array
+extern volatile int16 current_pose[NUM_AX12_SERVOS];
+extern volatile uint8 motion_step_servos_moving[MAX_MOTION_STEPS][NUM_AX12_SERVOS];
+// joint offset values
+extern volatile int16 joint_offset[NUM_AX12_SERVOS];
+
+
 // read in current servo positions to determine current pose
 // takes between 260us and 456us per servo (mainly 260us or 300us)
 // all up takes 5-6ms for READ_ALL mode
@@ -56,7 +66,7 @@ void calculatePoseServoSpeeds(uint16 time);
 // Returns	(int)	  -1  - communication error
 //					   0  - all ok
 //					   1  - alarm
-int moveToGoalPose(uint16 time, uint16 goal[], uint8 wait_flag);
+int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag);
 
 // Assume default pose (Balance - MotionPage 224)
 void moveToDefaultPose(void);
