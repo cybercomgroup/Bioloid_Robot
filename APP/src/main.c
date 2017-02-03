@@ -12,6 +12,7 @@
 #include "stm32f10x_lib.h"
 #include "dynamixel.h"
 #include "dxl_hal.h"
+#include "printf.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -87,6 +88,7 @@ void TxDByte_PC(byte);
 void mDelay(u32);
 void StartDiscount(s32);
 byte CheckTimeOut(void);
+void sputc(void*, char);
 
 /*******************************************************************************
 * Function Name  : main
@@ -97,6 +99,9 @@ byte CheckTimeOut(void);
 *******************************************************************************/
 int main(void)
 {
+	/* Setup minimal printf to send to serial console. */
+	//init_printf(0, sputc);
+
     /* System Clocks Configuration */
 	RCC_Configuration();
 
@@ -124,6 +129,7 @@ int main(void)
 	dxl_write_word( BROADCAST_ID, P_GOAL_POSITION_L, AmpPos );
 	mDelay(1000);
 
+	return 0;
 
 	GoalPos = 512;
 
@@ -304,6 +310,7 @@ void GPIO_Configuration(void)
 	GPIO_SetBits(PORT_ENABLE_RXD, PIN_ENABLE_RXD);	// RX Enable
 }
 
+
 void USART1_Configuration(u32 baudrate)
 {
 	USART_Configuration(USART_DXL, baudrate);
@@ -477,6 +484,11 @@ void TxDByte16(byte bSentData)
 	if (bTmp > '9')
 		bTmp += 7;
 	TxDByte_PC(bTmp);
+}
+
+void sputc ( void* p, char c)
+{
+	TxDByte_PC(c);
 }
 
 void TxDByte_PC(byte bTxdData)

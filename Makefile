@@ -1,9 +1,9 @@
 # setup
 # modified by zerom for WinARM 8/2010
 
-COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -Wall -g -Os -fno-common -std=c99
+COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -Wall -g -Os -fno-common -std=gnu99
 INCLUDE_DIRS = -I. -Istm32f10x_lib/inc -IHW/inc -IAPP/inc 
-INCLUDE_DIRS += -I"C:\WinARM\arm-eabi\include"
+
 LIBRARY_DIRS = -Lstm32f10x_lib
 
 
@@ -22,7 +22,7 @@ AS = $(TCHAIN_PREFIX)gcc
 ASFLAGS = $(COMPILE_OPTS) -c 
 
 LD = $(TCHAIN_PREFIX)gcc
-LDFLAGS = -Wl,--gc-sections,-Map=$@.map,-cref,-u,Reset_Handler $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T stm32.ld 
+LDFLAGS = -Wl,--gc-sections,-Map=$@.map,-cref,-u,Reset_Handler $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T stm32.ld
 
 OBJCP = $(TCHAIN_PREFIX)objcopy
 OBJCPFLAGS_HEX = -O ihex
@@ -54,8 +54,11 @@ MAIN_OBJS = \
  APP/src/dxl_hal.o \
  APP/src/dynamixel.o \
  APP/src/pose.o \
+ APP/src/globaldata.o \
+ APP/src/printf.o \
+ APP/src/delay.o \
  
-
+ 
 $(MAIN_OUT_ELF): $(MAIN_OBJS) stm32f10x_lib/libstm32.a
 	$(LD) $(LDFLAGS) $(MAIN_OBJS) stm32f10x_lib/libstm32.a --output $@
 
