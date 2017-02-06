@@ -225,21 +225,6 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 	return 0;
 }
 
-// todo is a debug function
-uint16*  moveToGoalPoseDebug(uint16 time, const uint16 goal[], uint8 wait_flag)
-{
-    int i;
-	int commStatus, errorStatus;
-
-	// copy goal to shared variable
-	for (i=0; i<NUM_AX12_SERVOS; i++)
-		{ goal_pose[i] = goal[i]; }
-
-	// do the setup and calculate speeds
-	calculatePoseServoSpeeds(time);
-	return goal_speed;
-}
-
 // move robot to default pose
 void moveToDefaultPose()
 {

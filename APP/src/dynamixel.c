@@ -163,7 +163,7 @@ int dxl_initialize( int devIndex, int baudnum )
 	baudrate = 2000000 / (baudnum + 1);
 	
 	// open serial communication
-	if( dxl_hal_open(devIndex, baudrate) == 0 ) // en röd strömming! för float ovan.
+	if( dxl_hal_open(devIndex, baudrate) == 0 )
 		return 0;
 
 	// show success and bus as free

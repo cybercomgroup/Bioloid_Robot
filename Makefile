@@ -57,7 +57,8 @@ MAIN_OBJS = \
  APP/src/globaldata.o \
  APP/src/printf.o \
  APP/src/delay.o \
- 
+ APP/src/hw_setup.o \
+ APP/src/hw_functions.o \
  
 $(MAIN_OUT_ELF): $(MAIN_OBJS) stm32f10x_lib/libstm32.a
 	$(LD) $(LDFLAGS) $(MAIN_OBJS) stm32f10x_lib/libstm32.a --output $@
