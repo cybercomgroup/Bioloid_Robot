@@ -142,6 +142,49 @@ void GPIO_Configuration(void)
 	GPIO_SetBits(PORT_ENABLE_RXD, PIN_ENABLE_RXD);	// RX Enable
 }
 
+void ADC_Configuration(void)
+{
+	ADC_InitTypeDef ADC_InitStructure;
+
+	ADC_StructInit(&ADC_InitStructure);
+
+	/* ADC1 configuration ------------------------------------------------------*/
+	ADC_InitStructure.ADC_Mode = ADC_Mode_Independent;
+	ADC_InitStructure.ADC_ScanConvMode = DISABLE;
+	ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
+	ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
+	ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
+	ADC_InitStructure.ADC_NbrOfChannel = 1;
+
+	ADC_Init(ADC1, &ADC_InitStructure);
+
+	/* ADC1 regular channels configuration */
+	ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1 , ADC_SampleTime_239Cycles5);
+	//ADC_ITConfig(ADC1, ADC_IT_EOC, ENABLE);
+
+	/* Enable ADC1 DMA */
+	//ADC_DMACmd(ADC1, ENABLE);
+
+	/* Enable ADC1 */
+	ADC_Cmd(ADC1, ENABLE);
+
+	/* Enable ADC1 reset calibration register */
+	/* Check the end of ADC1 reset calibration register */
+	ADC_ResetCalibration(ADC1);
+	while(ADC_GetResetCalibrationStatus(ADC1));
+
+
+	/* Start ADC1 calibration */
+	/* Check the end of ADC1 calibration */
+	ADC_StartCalibration(ADC1);
+	while(ADC_GetCalibrationStatus(ADC1));
+
+
+	/* Start ADC1 Software Conversion */
+	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+}
+
+
 
 void USART1_Configuration(u32 baudrate)
 {
