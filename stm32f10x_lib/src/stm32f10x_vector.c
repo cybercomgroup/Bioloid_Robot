@@ -167,6 +167,8 @@ void Reset_Handler(void)
     // Call the application's entry point.
     //
     main();
+
+    while(1); //TODO test this.
 }
 
 

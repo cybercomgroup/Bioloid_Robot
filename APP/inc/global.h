@@ -22,6 +22,7 @@
 #define _GLOBAL_H_
 
 #include "stdint.h"
+#include "typedefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -122,19 +123,6 @@ extern "C" {
 #define COMMAND_FRONT_GET_UP_MP			226
 #define COMMAND_BACK_GET_UP_MP			227
 #define COMMAND_RESET_MP				26
-
-
-// Standard types
-typedef uint8_t		uint8;
-typedef int8_t		int8;
-typedef uint16_t	uint16;
-typedef int16_t		int16;
-typedef uint32_t	uint32;
-typedef int32_t		int32;
-
-// Boolean types
-#define FALSE ((bool)0)
-#define TRUE  ((bool)1)
 
 // Additional Bit macros
 #define bit_set_hi(Port,Bit)     {Port |=(1<<Bit);}

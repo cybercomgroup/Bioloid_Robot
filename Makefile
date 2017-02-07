@@ -1,7 +1,7 @@
 # setup
 # modified by zerom for WinARM 8/2010
 
-COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -Wall -g -Os -fno-common 
+COMPILE_OPTS = -mcpu=cortex-m3 -mthumb -Wall -g -Os -fno-common  -std=c99
 INCLUDE_DIRS = -I. -Istm32f10x_lib/inc -IHW/inc -IAPP/inc 
 
 LIBRARY_DIRS = -Lstm32f10x_lib
@@ -59,7 +59,8 @@ MAIN_OBJS = \
  APP/src/delay.o \
  APP/src/hw_setup.o \
  APP/src/hw_functions.o \
- 
+ APP/src/motion.o \
+  
 $(MAIN_OUT_ELF): $(MAIN_OBJS) stm32f10x_lib/libstm32.a
 	$(LD) $(LDFLAGS) $(MAIN_OBJS) stm32f10x_lib/libstm32.a --output $@
 

@@ -9,6 +9,8 @@
  *
 */
 
+/* Modified by Anton Olsson / Cybercom */
+
 /*
  * Communication Protocol
  *
@@ -35,8 +37,9 @@
 #include "global.h"
 #include "dxl_hal.h"
 #include "dynamixel.h"
+
+#include "../inc/time.h"
 #include "pose.h"
-#include "delay.h"
 
 // define the positions of the bytes in the packet
 #define ID					(2)
@@ -59,7 +62,7 @@ int giBusUsing = 0;
 
 
 int dxl_init(int baudnum) {
-	dxl_init1(baudnum, 0);
+	return dxl_init1(baudnum, 0);
 }
 
 // High level initialization - specific robot settings for Bioloid

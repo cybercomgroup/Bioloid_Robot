@@ -1,8 +1,11 @@
-//#include "includes.h"
+#include "../inc/time.h"
 #include "hw_setup.h"
+#include "hw_functions.h"
 #include "dynamixel.h"
 #include "printf.h"
 #include "pose.h"
+#include "system_calls.h"
+#include "mem_attrs.h"
 #include "sensors.h"
 
 
@@ -27,10 +30,10 @@ typedef enum {
 volatile int start_button_pressed = 0;
 volatile command current_command = CMD_STOP;
 
-
-
 void dxl_test1();
 void _serial_putc(void*, char);
+
+const char * flashmemStr PROGMEM = "Hej, jag är i flash-minnet!"; // testing flash memory variable.
 
 uint16 pose[NUM_AX12_SERVOS] = {235,788,279,744,462,561,358,666,507,516,341,682,240,783,647,376,507,516};
 uint16 speeds[NUM_AX12_SERVOS];
@@ -61,6 +64,24 @@ int main(void)
 {
 	int res, exit = 0, ir_left, ir_right;
 
+	/* Initialization */
+
+	/* Setup minimal printf to send to serial console. */
+	init_printf(0, _serial_putc);
+
+	/* System Clocks Configuration */
+	RCC_Configuration();
+
+	/* NVIC configuration */
+	NVIC_Configuration();
+
+	/* GPIO configuration */
+	GPIO_Configuration();
+
+	SysTick_Configuration();
+
+	Timer_Configuration();
+
 	/* high level init fn, pings the DXLs to check their status.
 	   Here with max 3 retires on failure. */
 	res = dxl_init1( 1, 3 );
@@ -76,25 +97,6 @@ int main(void)
 		/* Wait here until start command given.
 		 * Presumingly, the value is changed in an interrupt handler. */
 	}
-
-	/* Initialization */
-
-	/* Setup minimal printf to send to serial console. */
-	init_printf(0, _serial_putc);
-
-    /* System Clocks Configuration */
-	RCC_Configuration();
-
-	/* NVIC configuration */
-	NVIC_Configuration();
-
-	/* GPIO configuration */
-	GPIO_Configuration();
-
-	SysTick_Configuration();
-
-	Timer_Configuration();
-
 	/* Enable interrupts */
 	//sei(); Where is this function declared?
 
@@ -109,7 +111,6 @@ int main(void)
 		/* Note that higher IR readings = closer! */
 		if (ir_left > MAX_OBSTACLE_DISTANCE || ir_right > MAX_OBSTACLE_DISTANCE) {
 			/* We might want to add separate handling depending on triggering foot */
-
 			if (current_command == CMD_WALK_AND_GRAB) {
 				/* Try to blindly pick up whatever is in front of you. */
 				issue_command(CMD_GRAB);
@@ -126,7 +127,7 @@ int main(void)
 			update_walk();
 		}
 	}
-
+	printf("\r\nProgram finished. Have a nice day!\r\n");
 	return 0;
 }
 
@@ -162,6 +163,29 @@ void dxl_test1() {
 	mDelay(1000);
 }
 
+void testDelayAndMillisFns() {
+	printf("Testing time.h functions, delaying 3000 ms...");
+	u32 t0 = millis();
+	mDelay(3000);
+	u32 t = millis();
+	printf(" Done. Took %u ms.\r\n", t-t0);
+}
+
+void testExitFn() {
+	printf("Exiting.\r\n");
+	exit(0);
+	printf("This is done after exit call!\r\n");
+}
+
+void testAbsFn() {
+	printf("Testing abs on 1 and -1: %d, %d \r\n", abs(1), abs(-1));
+}
+
+void testReadingFromFlashMem() {
+	printf("Reading variable from flash memory: ");
+	printf(">> %s <<\r\n", flashmemStr);
+
+}
 
 /* Put a character to the serial terminal.
  * Used in the custom printf function. */
