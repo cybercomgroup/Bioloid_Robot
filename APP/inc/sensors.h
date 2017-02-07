@@ -11,7 +11,7 @@ typedef enum {LEFT, RIGHT} ir;
 #define PORT_IR_RIGHT GPIOD
 
 //ADC multiplexer
-#define PORT_ADC_MUX GPIOA
+#define PORT_ADX_MUX GPIOA
 
 //P for plus
 #define PIN_SIG_MOT1P           GPIO_Pin_0
