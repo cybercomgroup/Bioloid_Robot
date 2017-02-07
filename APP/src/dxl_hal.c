@@ -1,6 +1,8 @@
 // Dynamixel SDK platform dependent source
 #include "dxl_hal.h"
 #include "stm32f10x_lib.h"
+#include "hw_setup.h"
+#include "hw_functions.h"
 
 
 int dxl_hal_open( int devIndex, int baudrate )

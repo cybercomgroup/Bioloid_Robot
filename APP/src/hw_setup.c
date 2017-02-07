@@ -3,6 +3,8 @@
 
 #include "hw_setup.h"
 
+#include "../inc/time.h"
+
 /*******************************************************************************
 * Function Name  : RCC_Configuration
 * Description    : Configures the different system clocks.

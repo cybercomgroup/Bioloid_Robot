@@ -1,6 +1,8 @@
 /************************* (C) COPYRIGHT 2010 ROBOTIS ***************************/
 /* Modified by Anton Olsson / Cybercom */
 
+/* Modified by Anton Olsson / Cybercom */
+
 #include "hw_functions.h"
 #include "hw_setup.h"
 
@@ -121,8 +123,9 @@ void RxD0Interrupt(void)
 
 void __ISR_DELAY(void)
 {
-	if (gwTimingDelay != 0x00)
+	if (gwTimingDelay != 0x00) {
 		gwTimingDelay--;
+	}
 }
 
 void mDelay(u32 nTime)
@@ -154,4 +157,8 @@ u8 CheckTimeOut(void)
 	      return 1;
 	else
 		return 0;
+}
+
+u32 millis() {
+	return SysTick_GetCounter();
 }

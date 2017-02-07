@@ -8,7 +8,7 @@
 #ifndef APP_INC_HW_FUNCTIONS_H_
 #define APP_INC_HW_FUNCTIONS_H_
 
-#include "stm32f10x_type.h"
+#include "typedefs.h"
 
 #define word                    u16
 #define byte                    u8
@@ -18,7 +18,7 @@ void RxD0Interrupt(void);
 void __ISR_DELAY(void);
 void DisableUSART1(void);
 void ClearBuffer256(void);
-byte CheckNewarrive(void);
+byte CheckNewArrive(void);
 void TxDByte_DXL(byte);
 byte RxDByte_DXL(void);
 void TxDString(byte*);

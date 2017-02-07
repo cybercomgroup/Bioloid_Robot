@@ -1,6 +1,6 @@
 // This file various global variables
 
-#include "stm32f10x_type.h" // for bool
+#include "typedefs.h" // for bool
 #include "global.h"
 
 // Array showing which Dynamixel servos are enabled (ID from 0 to 25)
