@@ -7,6 +7,7 @@
 
 #include "sensors.h"
 #include "stm32f10x_map.h"
+#include "stm32f10x_adc.h"
 
 /* This tutorial (for another microcontroller) explains well how the
  * BSR and BSRR registers (used by SetBits and ResetBits) work:
@@ -15,10 +16,11 @@
 /* ADC5-6 = RIGHT
  * ADC1-2 = LEFT */
 
+
 word read_ir_status(ir ir_id) {
 	word result;
 
-	GPIO_TypeDef port;
+	GPIO_TypeDef *port = 0;
 
 	//TODO: In this switch we might have to set the ADX MUX pins to read from the correct ADC
 	switch(ir_id) {
@@ -38,12 +40,16 @@ word read_ir_status(ir ir_id) {
 	GPIO_ResetBits(PORT_ADX_MUX,PIN_ADC_SELECT0);
 	GPIO_ResetBits(PORT_ADX_MUX,PIN_ADC_SELECT1);
 
-	uDelay(30);
+	//uDelay(30);
 
 	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 	//Short delay to allow the ADC to process the signal
-	uDelay(5);
+	//uDelay(5);
+	while( ! ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)); //TODO test if this works.
+
 	result = (ADC_GetConversionValue(ADC1));
+
+	ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
 
 	//Disable the sensor again
 	GPIO_ResetBits(port, PIN_SIG_MOT1P);

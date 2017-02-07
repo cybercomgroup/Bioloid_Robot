@@ -27,7 +27,7 @@ typedef enum {
 
 /* Global variables */
 
-volatile int start_button_pressed = 0;
+volatile bool start_button_pressed = 0;
 volatile command current_command = CMD_STOP;
 
 void dxl_test1();
