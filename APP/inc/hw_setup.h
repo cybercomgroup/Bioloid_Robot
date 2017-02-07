@@ -26,6 +26,7 @@ void GPIO_Configuration(void);
 void USART1_Configuration(u32);
 void USART_Configuration(u8, u32);
 void SysTick_Configuration(void);
+void ADC_Configuration(void);
 void Timer_Configuration(void);
 
 
