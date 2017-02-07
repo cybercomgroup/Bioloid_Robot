@@ -1,10 +1,8 @@
 /************************* (C) COPYRIGHT 2010 ROBOTIS ***************************/
+/* Modified by Anton Olsson / Cybercom */
 
-//#include "hw_functions.h"
+#include "hw_functions.h"
 #include "hw_setup.h"
-
-#define word                    u16
-#define byte                    u8
 
 /* Private variables ---------------------------------------------------------*/
 volatile byte                   gbpRxInterruptBuffer[256]; // dxl buffer
@@ -13,27 +11,10 @@ volatile vu32                   gwTimingDelay,gw1msCounter;
 volatile u16                    capture;
 u32                             Baudrate_DXL = 	1000000;
 u32                             Baudrate_PC = 57600;
-vu16                            CCR1_Val = 100; 		// 1ms
+// vu16                            CCR1_Val = 100; 		// 1ms
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-void TimerInterrupt_1ms(void);
-void RxD0Interrupt(void);
-void __ISR_DELAY(void);
-void DisableUSART1(void);
-void ClearBuffer256(void);
-byte CheckNewarrive(void);
-void TxDByte_DXL(byte);
-byte RxDByte_DXL(void);
-void TxDString(byte*);
-void TxDWord16(word);
-void TxDByte16(byte);
-void TxDByte_PC(byte);
-void mDelay(u32);
-void StartDiscount(s32);
-byte CheckTimeOut(void);
-
-
 
 void TimerInterrupt_1ms(void) //OLLO CONTROL
 {
@@ -42,7 +23,7 @@ void TimerInterrupt_1ms(void) //OLLO CONTROL
 		TIM_ClearITPendingBit(TIM2, TIM_IT_CC1);
 
 		capture = TIM_GetCapture1(TIM2);
-		TIM_SetCompare1(TIM2, capture + CCR1_Val);
+		TIM_SetCompare1(TIM2, capture + CCR1_VAL);
 
 		if(gw1msCounter > 0)
 			gw1msCounter--;

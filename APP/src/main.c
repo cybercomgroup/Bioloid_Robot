@@ -1,7 +1,9 @@
 //#include "includes.h"
+#include "hw_setup.h"
 #include "dynamixel.h"
 #include "printf.h"
 #include "pose.h"
+
 
 void dxl_test1();
 void _serial_putc(void*, char);

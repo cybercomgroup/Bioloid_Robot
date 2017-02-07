@@ -18,6 +18,8 @@
 #define USART_DXL			    0
 #define USART_PC			    2
 
+#define CCR1_VAL				100 // 1 ms
+
 void RCC_Configuration(void);
 void NVIC_Configuration(void);
 void GPIO_Configuration(void);

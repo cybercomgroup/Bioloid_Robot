@@ -1,7 +1,7 @@
 /************************* (C) COPYRIGHT 2010 ROBOTIS ***************************/
+/* Modified by Anton Olsson / Cybercom */
 
 #include "hw_setup.h"
-
 
 /*******************************************************************************
 * Function Name  : RCC_Configuration
@@ -228,7 +228,7 @@ void Timer_Configuration(void)
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_Timing;
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Disable;
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
-	TIM_OCInitStructure.TIM_Pulse = CCR1_Val ;
+	TIM_OCInitStructure.TIM_Pulse = CCR1_VAL ;
 
 	TIM_OC1Init(TIM2, &TIM_OCInitStructure);
 	TIM_OC1PreloadConfig(TIM2, TIM_OCPreload_Disable);
