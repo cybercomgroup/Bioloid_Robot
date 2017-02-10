@@ -23,11 +23,25 @@ typedef enum {
 	CMD_TURN_RIGHT 		= 6,
 	CMD_WAVE 			= 7
 } command;
+
+typedef enum {
+	START_DOWN = 1,
+	LEFT_DOWN = 1 << 1,
+	RIGHT_DOWN = 1 << 2,
+
+
+} button_state;
 /* --- */
+
 
 /* Global variables */
 
-volatile bool start_button_pressed = 0;
+// Button related variables
+volatile bool button_up_pressed = FALSE;
+volatile bool button_down_pressed = FALSE;
+volatile bool button_left_pressed = FALSE;
+volatile bool button_right_pressed = FALSE;
+volatile bool start_button_pressed = FALSE;
 volatile command current_command = CMD_STOP;
 
 void dxl_test1();
@@ -62,7 +76,7 @@ void update_walk(void) {
 
 int main(void)
 {
-	int res, exit = 0, ir_left, ir_right;
+	int res, exit = 0, ir_left, ir_right, i;
 
 	/* Initialization */
 
@@ -81,6 +95,10 @@ int main(void)
 	SysTick_Configuration();
 
 	Timer_Configuration();
+
+	printf("Init ADC... ");
+	ADC_Configuration();
+	printf("Done.\r\n");
 
 	/* high level init fn, pings the DXLs to check their status.
 	   Here with max 3 retires on failure. */

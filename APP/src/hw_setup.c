@@ -241,8 +241,8 @@ void USART_Configuration(u8 PORT, u32 baudrate)
 
 void SysTick_Configuration(void)
 {
-	/* SysTick end of count event each 1ms with input clock equal to 9MHz (HCLK/8, default) */
-	SysTick_SetReload(9000);
+	/* SysTick end of count event each 1us with input clock equal to 9MHz (HCLK/8, default) */
+	SysTick_SetReload(9);
 
 	/* Enable SysTick interrupt */
 	SysTick_ITConfig(ENABLE);

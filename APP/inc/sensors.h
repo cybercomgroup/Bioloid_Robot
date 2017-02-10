@@ -3,15 +3,15 @@
 
 typedef enum {LEFT, RIGHT} ir;
 
-/* THESE PORTS ARE CHOSEN ARBITRARILY AND ARE LIKELY INCORRECT!
+/* THESE PORTS ARE CHOSEN ARBITRARILY AND ARE INCORRECT!
  * PLEASE TEST ON THE HARDWARE TO VERIFY!
  *
  * Check stm32f10x_map.h for port definitions. */
-#define PORT_IR_LEFT GPIOC
-#define PORT_IR_RIGHT GPIOD
+#define PORT_IR_LEFT GPIOA
+#define PORT_IR_RIGHT GPIOA
 
 //ADC multiplexer
-#define PORT_ADX_MUX GPIOA
+#define PORT_ADX_MUX GPIOC
 
 //P for plus
 #define PIN_SIG_MOT1P           GPIO_Pin_0

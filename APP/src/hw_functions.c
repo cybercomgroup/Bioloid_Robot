@@ -130,17 +130,22 @@ void __ISR_DELAY(void)
 
 void mDelay(u32 nTime)
 {
-	/* Enable the SysTick Counter */
-	SysTick_CounterCmd(SysTick_Counter_Enable);
+	uDelay(nTime*1000);
+}
 
-	gwTimingDelay = nTime;
+void uDelay(u32 nTime)
+{
+	  /* Enable the SysTick Counter */
+	  SysTick_CounterCmd(SysTick_Counter_Enable);
 
-	while(gwTimingDelay != 0);
+	  gwTimingDelay = nTime;
 
-	/* Disable SysTick Counter */
-	SysTick_CounterCmd(SysTick_Counter_Disable);
-	/* Clear SysTick Counter */
-	SysTick_CounterCmd(SysTick_Counter_Clear);
+	  while(gwTimingDelay != 0);
+
+	  /* Disable SysTick Counter */
+	  SysTick_CounterCmd(SysTick_Counter_Disable);
+	  /* Clear SysTick Counter */
+	  SysTick_CounterCmd(SysTick_Counter_Clear);
 }
 
 void StartDiscount(s32 StartTime)
@@ -160,5 +165,9 @@ u8 CheckTimeOut(void)
 }
 
 u32 millis() {
+	return SysTick_GetCounter() / 1000;
+}
+
+u32 micros() {
 	return SysTick_GetCounter();
 }

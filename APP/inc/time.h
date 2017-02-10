@@ -15,7 +15,9 @@
 #define _delay_ms mDelay
 
 void mDelay(uint32 	__ms);
+void uDelay(uint32 	__ms);
 
 u32 millis();
+u32 micros();
 
 #endif /* APP_INC_TIME_H_ */

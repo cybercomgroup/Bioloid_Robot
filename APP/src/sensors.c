@@ -5,7 +5,9 @@
  *      Author: kalle
  */
 
+#include "printf.h"
 #include "sensors.h"
+#include "time.h"
 #include "stm32f10x_map.h"
 #include "stm32f10x_adc.h"
 
@@ -15,7 +17,6 @@
 
 /* ADC5-6 = RIGHT
  * ADC1-2 = LEFT */
-
 
 word read_ir_status(ir ir_id) {
 	word result;
@@ -40,16 +41,29 @@ word read_ir_status(ir ir_id) {
 	GPIO_ResetBits(PORT_ADX_MUX,PIN_ADC_SELECT0);
 	GPIO_ResetBits(PORT_ADX_MUX,PIN_ADC_SELECT1);
 
-	//uDelay(30);
+	//printf("done flag pre clear: %d \r\n", ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
 
-	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+	ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
+	//printf("done flag post clear: %d \r\n", ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
+
+	uDelay(30);
+	//printf("Starting ADC conv.\r\n");
+	ADC_SoftwareStartConvCmd(ADC1, ENABLE); // ADC1 is on port 1 (GPIOA?)
+
+	//printf("done flag pre delay: %d \r\n", ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
 	//Short delay to allow the ADC to process the signal
-	//uDelay(5);
-	while( ! ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)); //TODO test if this works.
+	uDelay(5);
+	//printf("done flag post delay: %d \r\n", ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
+	//printf("Waiting for ADC to complete.\r\n");
+	//while( ! ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)); //TODO test if this works.
 
 	result = (ADC_GetConversionValue(ADC1));
 
+	//printf("ADC to complete: %d\r\n", result);
+
 	ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
+
+	//printf("done flag post clear2: %d \r\n", ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
 
 	//Disable the sensor again
 	GPIO_ResetBits(port, PIN_SIG_MOT1P);

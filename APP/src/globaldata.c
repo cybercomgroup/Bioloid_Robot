@@ -26,12 +26,6 @@ const char melody5[] PROGMEM = "! O3 T40 f.b.f.b.f.b.f.b.";
 */
 
 // Define global variables for use in the ISRs
-// Button related variables
-volatile bool button_up_pressed = FALSE;
-volatile bool button_down_pressed = FALSE;
-volatile bool button_left_pressed = FALSE;
-volatile bool button_right_pressed = FALSE;
-volatile bool start_button_pressed = FALSE;
 
 // Buzzer related global variables
 volatile unsigned char buzzerFinished = 0;	// flag: 0 while playing
