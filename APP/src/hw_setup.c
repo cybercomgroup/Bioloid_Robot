@@ -241,11 +241,19 @@ void USART_Configuration(u8 PORT, u32 baudrate)
 
 void SysTick_Configuration(void)
 {
+	/* Disable SysTick Counter */
+	SysTick_CounterCmd(SysTick_Counter_Disable);
+	/* Clear SysTick Counter */
+	SysTick_CounterCmd(SysTick_Counter_Clear);
+
 	/* SysTick end of count event each 1us with input clock equal to 9MHz (HCLK/8, default) */
-	SysTick_SetReload(9);
+	SysTick_SetReload(9000);
 
 	/* Enable SysTick interrupt */
 	SysTick_ITConfig(ENABLE);
+
+	/* Enable the SysTick Counter */
+	SysTick_CounterCmd(SysTick_Counter_Enable);
 }
 
 void Timer_Configuration(void)

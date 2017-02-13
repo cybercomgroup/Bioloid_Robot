@@ -61,6 +61,7 @@ MAIN_OBJS = \
  APP/src/hw_functions.o \
  APP/src/motion.o \
  APP/src/sensors.o \
+ APP/src/time.o \
  
 $(MAIN_OUT_ELF): $(MAIN_OBJS) stm32f10x_lib/libstm32.a
 	$(LD) $(LDFLAGS) $(MAIN_OBJS) stm32f10x_lib/libstm32.a --output $@

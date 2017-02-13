@@ -3,7 +3,9 @@
 #include "stm32f10x_lib.h"
 #include "hw_setup.h"
 #include "hw_functions.h"
+#include "time.h"
 
+u32 dxlTimeoutTime = 0;
 
 int dxl_hal_open( int devIndex, int baudrate )
 {
@@ -70,7 +72,7 @@ void dxl_hal_set_timeout( int NumRcvByte )
 	// NumRcvByte: number of recieving data(to calculate maximum waiting time)
 
 	//exceed range of int...
-	StartDiscount(NumRcvByte*100);
+	dxlTimeoutTime = millis() + NumRcvByte*100;
 }
 
 int dxl_hal_timeout(void)
@@ -78,5 +80,5 @@ int dxl_hal_timeout(void)
 	// Check timeout
 	// Return: 0 is false, 1 is true(timeout occurred)
 
-	return CheckTimeOut();
+	return millis() > dxlTimeoutTime ? 1 : 0;
 }

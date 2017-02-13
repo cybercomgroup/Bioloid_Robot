@@ -25,7 +25,6 @@ void TxDString(byte*);
 void TxDWord16(word);
 void TxDByte16(byte);
 void TxDByte_PC(byte);
-void mDelay(u32);
 void StartDiscount(s32);
 byte CheckTimeOut(void);
 

@@ -187,6 +187,24 @@ void testDelayAndMillisFns() {
 	mDelay(3000);
 	u32 t = millis();
 	printf(" Done. Took %u ms.\r\n", t-t0);
+
+	printf("Testing time.h functions, delaying 1 000 000 us...");
+	t0 = micros();
+	uDelay(1000000);
+	t = micros();
+	printf(" Done. Took %u us.\r\n", t-t0);
+
+	t0 = micros();
+	t = micros();
+	printf("1st Call to micros take %u us (%u - %u).\r\n", t-t0, t, t0);
+
+	t0 = micros();
+	t = micros();
+	printf("2nd Call to micros take %u us (%u - %u).\r\n", t-t0, t, t0);
+
+	t0 = micros();
+	t = micros();
+	printf("3rd Call to micros take %u us (%u - %u).\r\n", t-t0, t, t0);
 }
 
 void testExitFn() {
