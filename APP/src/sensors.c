@@ -18,66 +18,60 @@
 /* ADC5-6 = RIGHT
  * ADC1-2 = LEFT */
 
-word read_ir_status(ir ir_id) {
+word read_ir_right(void) {
 	word result;
 
-	GPIO_TypeDef *port = 0;
+	GPIO_SetBits(PORT_IR_RIGHT, PIN_IR_RIGHT_MOTP);
+	GPIO_ResetBits(PORT_IR_RIGHT, PIN_IR_RIGHT_MOTM);
 
-	//TODO: In this switch we might have to set the ADX MUX pins to read from the correct ADC
-	switch(ir_id) {
-	case RIGHT:
-		port = PORT_IR_RIGHT;
-		break;
-	case LEFT:
-		port = PORT_IR_LEFT;
-		break;
-	}
+	//Select which ADC pins to read from using the multiplexer
+	GPIO_ResetBits(PORT_ADX_MUX,PIN_ADC_SELECT0);
+	GPIO_SetBits(PORT_ADX_MUX,PIN_ADC_SELECT1);
 
-	//Do some weird wizard shit to enable the IR sensor
-	GPIO_SetBits(port, PIN_SIG_MOT1P);
-	GPIO_ResetBits(port, PIN_SIG_MOT1M);
+	//ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
+	uDelay(30);
+	//while( ! ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)); //TODO test if this works.
+
+	ADC_SoftwareStartConvCmd(ADC2, ENABLE);
+
+	//ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
+
+	uDelay(5);
+
+	result = (ADC_GetConversionValue(ADC2));
+
+	//Disable the sensor again
+	GPIO_ResetBits(PORT_IR_RIGHT, PIN_IR_RIGHT_MOTP);
+	GPIO_ResetBits(PORT_IR_RIGHT, PIN_IR_RIGHT_MOTM);
+
+	return result;
+}
+
+word read_ir_left(void) {
+	word result;
+
+	GPIO_SetBits(PORT_IR_LEFT, PIN_IR_LEFT_MOTP);
+	GPIO_ResetBits(PORT_IR_LEFT, PIN_IR_LEFT_MOTM);
 
 	//Select which ADC pins to read from using the multiplexer
 	GPIO_ResetBits(PORT_ADX_MUX,PIN_ADC_SELECT0);
 	GPIO_ResetBits(PORT_ADX_MUX,PIN_ADC_SELECT1);
 
-	//printf("done flag pre clear: %d \r\n", ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
-
-	ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
-	//printf("done flag post clear: %d \r\n", ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
-
 	uDelay(30);
-	//printf("Starting ADC conv.\r\n");
-	ADC_SoftwareStartConvCmd(ADC1, ENABLE); // ADC1 is on port 1 (GPIOA?)
 
-	//printf("done flag pre delay: %d \r\n", ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
-	//Short delay to allow the ADC to process the signal
+	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+
 	uDelay(5);
-	//printf("done flag post delay: %d \r\n", ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
-	//printf("Waiting for ADC to complete.\r\n");
-	//while( ! ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)); //TODO test if this works.
 
 	result = (ADC_GetConversionValue(ADC1));
 
-	//printf("ADC to complete: %d\r\n", result);
-
-	ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
-
-	//printf("done flag post clear2: %d \r\n", ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC));
+	//ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
 
 	//Disable the sensor again
-	GPIO_ResetBits(port, PIN_SIG_MOT1P);
-	GPIO_ResetBits(port, PIN_SIG_MOT1M);
+	GPIO_ResetBits(PORT_IR_LEFT, PIN_IR_LEFT_MOTP);
+	GPIO_ResetBits(PORT_IR_LEFT, PIN_IR_LEFT_MOTM);
 
 	return result;
-}
-
-word read_ir_right(void) {
-	return read_ir_status(RIGHT);
-}
-
-word read_ir_left(void) {
-	return read_ir_status(LEFT);
 }
 
 
