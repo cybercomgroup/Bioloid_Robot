@@ -34,7 +34,7 @@ word read_ir_right(void) {
 
 	ADC_SoftwareStartConvCmd(ADC2, ENABLE);
 
-	 while(ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET);
+	 while(ADC_GetFlagStatus(ADC2, ADC_FLAG_EOC) == RESET);
 
 	//ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
 
