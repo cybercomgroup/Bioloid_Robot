@@ -174,17 +174,17 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 {
     int i;
 	int commStatus, errorStatus;
-	printf("setting goal pose\r\n");
+	printf("setting goal pose\n");
 	// copy goal to shared variable
 	for (i=0; i<NUM_AX12_SERVOS; i++)
 		{ goal_pose[i] = goal[i]; }
 
-	printf("calculate speeds\r\n");
+	printf("calculate speeds\n");
 
 	// do the setup and calculate speeds
 	calculatePoseServoSpeeds(time);
 
-	printf("setting goal pose done\r\n");
+	printf("setting goal pose done\n");
 
 	// write out the goal positions via sync write
 	commStatus = dxl_set_goal_speed(NUM_AX12_SERVOS, AX12_IDS, goal_pose, goal_speed);
@@ -196,7 +196,7 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 		return -1;
 	}
 
-	printf("set speeds sent\r\n");
+	printf("set speeds sent\n");
 
 	// only wait for pose to finish if requested to do so
 	if( wait_flag == 1 )
@@ -205,7 +205,7 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 		// wait for the movement to finish
 		waitForPoseFinish();
 
-		printf(" done!\r\n");
+		printf(" done!\n");
 
 		// check that we didn't cause any alarms
 		for (i=0; i<NUM_AX12_SERVOS; i++) {
@@ -218,7 +218,7 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 				return 1;
 			}
 		}
-		printf("moveToGoalPose: all ok, read back current pose.\r\n");
+		printf("moveToGoalPose: all ok, read back current pose.\n");
 		// all ok, read back current pose
 		readCurrentPose(READ_ALL, 0);	
 	}	

@@ -85,7 +85,7 @@ int dxl_init1(int baudnum, int maxRetriesPerDxl)
 		if (errorStatus == -1 || gbCommStatus != COMM_RXSUCCESS) {
 			if (errorStatus == -1) {
 				// timed out
-				printf("Hardware Configuration Failure at Dynamixel ID %d (timed out).\r\n", AX12_IDS[i]);
+				printf("Hardware Configuration Failure at Dynamixel ID %d (timed out).\n", AX12_IDS[i]);
 			} else {
 				// got a response packet, but with an error code.
 				printf("Failure in ping response: ");
@@ -99,7 +99,7 @@ int dxl_init1(int baudnum, int maxRetriesPerDxl)
 				// delay 100 ms and try again on the same id.
 				retriesDxl++;
 				i--;
-				printf("Retrying..\r\n");
+				printf("Retrying..\n");
 				_delay_ms(100);
 			}
 		} else {
@@ -150,7 +150,7 @@ int dxl_init1(int baudnum, int maxRetriesPerDxl)
 	}
 	_delay_ms(50);
 
-	printf("\nDXL initialization ok.\r\n");
+	printf("\nDXL initialization ok.\n");
 
 	return 0;
 }
@@ -471,21 +471,21 @@ int dxl_ping( int id )
 	gbInstructionPacket[INSTRUCTION] = INST_PING;
 	gbInstructionPacket[LENGTH] = 2;
 	
-	//printf("Sending ping to dxl %d\r\n", id);
+	//printf("Sending ping to dxl %d\n", id);
 	dxl_txrx_packet();
 
 	if (gbCommStatus == COMM_RXSUCCESS)
 	{
-		//printf("Sending ping to dxl %d success: %d\r\n", id, (int)gbStatusPacket[ERRBIT]);
+		//printf("Sending ping to dxl %d success: %d\n", id, (int)gbStatusPacket[ERRBIT]);
 		// return the error code
 		return (int)gbStatusPacket[ERRBIT];
 	// check if servo exists (via timeout)
 	} else if( gbCommStatus == COMM_RXTIMEOUT )
 	{
-		//printf("Sending ping to dxl %d timed out\r\n", id);
+		//printf("Sending ping to dxl %d timed out\n", id);
 		return -1;
 	} else {
-		//printf("Sending ping to dxl %d failed. comStatus: %d\r\n", id, gbCommStatus);
+		//printf("Sending ping to dxl %d failed. comStatus: %d\n", id, gbCommStatus);
 		return 0;
 	}
 }
