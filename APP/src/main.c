@@ -7,7 +7,8 @@
 #include "system_calls.h"
 #include "mem_attrs.h"
 #include "sensors.h"
-
+#include "string.h"
+#include "motion_f.h"
 
 //TODO: Move this stuff to a suitable header file:
 /* --- */
@@ -44,10 +45,8 @@ volatile bool button_right_pressed = FALSE;
 volatile bool start_button_pressed = FALSE;
 volatile command current_command = CMD_STOP;
 
-void dxl_test1();
-void _serial_putc(void*, char);
 
-const char * flashmemStr PROGMEM = "Hej, jag är i flash-minnet!"; // testing flash memory variable.
+void _serial_putc(void*, char); // put a char in serial console
 
 uint16 pose[NUM_AX12_SERVOS] = {235,788,279,744,462,561,358,666,507,516,341,682,240,783,647,376,507,516};
 uint16 speeds[NUM_AX12_SERVOS];
@@ -64,6 +63,14 @@ void issue_command(command cmd) {
 	 * We also most likely want to return to the
 	 * default pose before starting a new one! */
 }
+
+/* Test functions. */
+void testAbsFn();
+void run_tests();
+void dxl_test1();
+void dxl_test2();
+void testTimeFns();
+void testIR();
 
 void update_walk(void) {
 	/* Here we need to do the following:
@@ -109,6 +116,8 @@ int main(void)
 		return 0;
 	}
 
+	printf("Press start!!.\r\n");
+	start_button_pressed = 1;
 	while (!start_button_pressed) {
 		//TODO: Add some fancy blinking lights or other stuff
 
@@ -118,35 +127,19 @@ int main(void)
 	/* Enable interrupts */
 	//sei(); Where is this function declared?
 
-	while(!exit) {
-		/* Interpret command from controller */
-		controller_interpret_command();
+	printf("Starting main loop.\r\n");
 
-		/* Read data from sensors */
-		ir_left = read_ir_left();
-		ir_right = read_ir_right();
+	testIR();
+	//testTimeFns();
 
-		/* Note that higher IR readings = closer! */
-		if (ir_left > MAX_OBSTACLE_DISTANCE || ir_right > MAX_OBSTACLE_DISTANCE) {
-			/* We might want to add separate handling depending on triggering foot */
-			if (current_command == CMD_WALK_AND_GRAB) {
-				/* Try to blindly pick up whatever is in front of you. */
-				issue_command(CMD_GRAB);
-			} else {
-				/* Turn to avoid obstacle */
-				issue_command(CMD_TURN_LEFT);
-			}
-		}
-
-		/* Read gyro sensors? */
-
-		/* Walk */
-		if (current_command == CMD_WALK_FORWARD || current_command == CMD_WALK_BACKWARD) {
-			update_walk();
-		}
-	}
 	printf("\r\nProgram finished. Have a nice day!\r\n");
 	return 0;
+}
+
+void run_tests() {
+
+	testTimeFns();
+	testAbsFn();
 }
 
 void dxl_test1() {
@@ -181,10 +174,14 @@ void dxl_test1() {
 	mDelay(1000);
 }
 
-void testDelayAndMillisFns() {
-	printf("Testing time.h functions, delaying 3000 ms...");
+void dxl_test2() {
+	executeMotion(26); // stand up
+}
+
+void testTimeFns() {
+	printf("Testing time.h functions, delaying 1000 ms...");
 	u32 t0 = millis();
-	mDelay(3000);
+	mDelay(1000);
 	u32 t = millis();
 	printf(" Done. Took %u ms.\r\n", t-t0);
 
@@ -207,20 +204,48 @@ void testDelayAndMillisFns() {
 	printf("3rd Call to micros take %u us (%u - %u).\r\n", t-t0, t, t0);
 }
 
-void testExitFn() {
-	printf("Exiting.\r\n");
-	exit(0);
-	printf("This is done after exit call!\r\n");
-}
-
 void testAbsFn() {
 	printf("Testing abs on 1 and -1: %d, %d \r\n", abs(1), abs(-1));
 }
 
-void testReadingFromFlashMem() {
-	printf("Reading variable from flash memory: ");
-	printf(">> %s <<\r\n", flashmemStr);
+void testIR() {
+	int i = 0, ir_left, ir_right;
+	while(i < 10) {
+		//i++; // limit number of iterations
 
+
+		/* Interpret command from controller */
+		controller_interpret_command();
+
+		/* Read data from sensors */
+		ir_left = read_ir_left();
+		ir_right = read_ir_right();
+
+		printf("ir left: %d, right: %d\r\n", ir_left, ir_right);
+
+		delay_ms(500); // delay so that we dont go as fast as possible.
+
+		/* Note that higher IR readings = closer! */
+		if (ir_left > MAX_OBSTACLE_DISTANCE || ir_right > MAX_OBSTACLE_DISTANCE) {
+			/* We might want to add separate handling depending on triggering foot */
+			if (current_command == CMD_WALK_AND_GRAB) {
+				/* Try to blindly pick up whatever is in front of you. */
+				issue_command(CMD_GRAB);
+			} else {
+				/* Turn to avoid obstacle */
+				issue_command(CMD_TURN_LEFT);
+			}
+		}
+
+		/* Read gyro sensors? */
+
+		/* Walk */
+		if (current_command == CMD_WALK_FORWARD || current_command == CMD_WALK_BACKWARD) {
+			update_walk();
+		}
+
+
+	}
 }
 
 /* Put a character to the serial terminal.

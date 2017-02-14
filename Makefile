@@ -22,7 +22,7 @@ AS = $(TCHAIN_PREFIX)gcc
 ASFLAGS = $(COMPILE_OPTS) -c 
 
 LD = $(TCHAIN_PREFIX)gcc
-LDFLAGS = -Wl,--gc-sections,-Map=$@.map,-cref,-u,Reset_Handler $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T stm32.ld
+LDFLAGS = -Wl,--gc-sections,-Map=$@.map,-cref,-u,Reset_Handler $(INCLUDE_DIRS) $(LIBRARY_DIRS) -T stm32.ld -lgcc 
 
 OBJCP = $(TCHAIN_PREFIX)objcopy
 OBJCPFLAGS_HEX = -O ihex
@@ -62,6 +62,7 @@ MAIN_OBJS = \
  APP/src/motion.o \
  APP/src/sensors.o \
  APP/src/time.o \
+ APP/src/walk.o \
  
 $(MAIN_OUT_ELF): $(MAIN_OBJS) stm32f10x_lib/libstm32.a
 	$(LD) $(LDFLAGS) $(MAIN_OBJS) stm32f10x_lib/libstm32.a --output $@
