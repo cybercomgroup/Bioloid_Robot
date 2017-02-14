@@ -145,19 +145,24 @@ int main(void)
 
 	Timer_Configuration();
 
+
 	/* Enable ZigBee receiver for rc100 controller */
 	USART_Configuration(USART_ZIGBEE, 57600);
 
 	printf("Init ADC... ");
+
 	ADC_Configuration();
-	printf("Done.\r\n");
+
+	printf("Loading motion pages...");
+	motionPageInit();
+	printf(" Done.\n");
 
 	/* high level init fn, pings the DXLs to check their status.
 	   Here with max 3 retires on failure. */
 	res = dxl_init1( 1, 3 );
 
 	if (res != 0){
-		printf("DXL init failed, aborting.\r\n");
+		printf("DXL init failed, aborting.\n");
 		return 0;
 	}
 
@@ -165,6 +170,7 @@ int main(void)
 	rc100_init();
 
 	printf("Press start!!.\r\n");
+
 	start_button_pressed = 1;
 	while (!start_button_pressed) {
 		//TODO: Add some fancy blinking lights or other stuff
@@ -175,12 +181,13 @@ int main(void)
 	/* Enable interrupts */
 	//sei(); Where is this function declared?
 
-	printf("Starting main loop.\r\n");
+	printf("Starting main loop.\n");
 
-	testIR();
+	//testIR();
 	//testTimeFns();
+	dxl_test2();
 
-	printf("\r\nProgram finished. Have a nice day!\r\n");
+	printf("\nProgram finished. Have a nice day!\n");
 	return 0;
 }
 
@@ -200,30 +207,34 @@ void dxl_test1() {
 	dxl_write_word( 1, DXL_GOAL_POSITION_L, 512 );
 	mDelay(1000);
 
-	//printf("Moving to default pose.\r\n");
+	//printf("Moving to default pose.\n");
 	//for (i=0;i< NUM_AX12_SERVOS; i++ )
 	//	pose[i] = current_pose[i];
 	//pose[0] = 235;
 
 	//moveToGoalPose(1000, pose, 0);
-	//printf("done\r\n");
+	//printf("done\n");
 	//return 0;
-//	printf("dbg goal speed: %d %d %d \r\n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
+//	printf("dbg goal speed: %d %d %d \n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
 
 	for (i=0;i< NUM_AX12_SERVOS; i++ )
 		speeds[i] = 100;
 
-	//printf("goal speed2: %d\r\n", speeds[0]);
-	//printf("speeds  %d %d %d \r\n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
+	//printf("goal speed2: %d\n", speeds[0]);
+	//printf("speeds  %d %d %d \n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
 	//dxl_set_goal_speed(NUM_AX12_SERVOS, AX12_IDS, pose, speeds);
 	dxl_set_goal_speed(1, AX12_IDS, pose, speeds);
 	//moveToDefaultPose();
-	//printf("Moving to default pose done! commstatus %d\r\n", comSt);
+	//printf("Moving to default pose done! commstatus %d\n", comSt);
 	mDelay(1000);
 }
 
 void dxl_test2() {
 	executeMotion(26); // stand up
+	mDelay(2000);
+	executeMotion(7);
+	mDelay(2000);
+	executeMotion(25); // sit down again
 }
 
 void testTimeFns() {
@@ -231,29 +242,29 @@ void testTimeFns() {
 	u32 t0 = millis();
 	mDelay(1000);
 	u32 t = millis();
-	printf(" Done. Took %u ms.\r\n", t-t0);
+	printf(" Done. Took %u ms.\n", t-t0);
 
 	printf("Testing time.h functions, delaying 1 000 000 us...");
 	t0 = micros();
 	uDelay(1000000);
 	t = micros();
-	printf(" Done. Took %u us.\r\n", t-t0);
+	printf(" Done. Took %u us.\n", t-t0);
 
 	t0 = micros();
 	t = micros();
-	printf("1st Call to micros take %u us (%u - %u).\r\n", t-t0, t, t0);
+	printf("1st Call to micros take %u us (%u - %u).\n", t-t0, t, t0);
 
 	t0 = micros();
 	t = micros();
-	printf("2nd Call to micros take %u us (%u - %u).\r\n", t-t0, t, t0);
+	printf("2nd Call to micros take %u us (%u - %u).\n", t-t0, t, t0);
 
 	t0 = micros();
 	t = micros();
-	printf("3rd Call to micros take %u us (%u - %u).\r\n", t-t0, t, t0);
+	printf("3rd Call to micros take %u us (%u - %u).\n", t-t0, t, t0);
 }
 
 void testAbsFn() {
-	printf("Testing abs on 1 and -1: %d, %d \r\n", abs(1), abs(-1));
+	printf("Testing abs on 1 and -1: %d, %d \n", abs(1), abs(-1));
 }
 
 /* This is the main program.... should be renamed as such. */
@@ -269,7 +280,7 @@ void testIR() {
 		ir_left = read_ir_left();
 		ir_right = read_ir_right();
 
-		printf("ir left: %d, right: %d\r\n", ir_left, ir_right);
+		printf("ir left: %d, right: %d\n", ir_left, ir_right);
 
 		delay_ms(500); // delay so that we dont go as fast as possible.
 
@@ -296,6 +307,8 @@ void testIR() {
  * Used in the custom printf function. */
 void _serial_putc ( void* p, char c)
 {
+	if (c == '\n') // prepend a \r for each \n printed. Because our console likes that.
+		TxDByte_PC('\r');
 	TxDByte_PC(c);
 }
 

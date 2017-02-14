@@ -183,7 +183,7 @@ void ADC_Configuration(void)
 
 
 	/* Start ADC1 Software Conversion */
-	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+	//ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 
 
 	/* Init ADC2 with same config as ADC1 */
@@ -197,7 +197,7 @@ void ADC_Configuration(void)
 	ADC_StartCalibration(ADC2);
 	while(ADC_GetCalibrationStatus(ADC2));
 
-	ADC_SoftwareStartConvCmd(ADC2, ENABLE);
+	//ADC_SoftwareStartConvCmd(ADC2, ENABLE);
 }
 
 
