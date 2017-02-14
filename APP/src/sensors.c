@@ -28,17 +28,11 @@ word read_ir_right(void) {
 	GPIO_ResetBits(PORT_ADX_MUX,PIN_ADC_SELECT0);
 	GPIO_SetBits(PORT_ADX_MUX,PIN_ADC_SELECT1);
 
-	//ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
-	//uDelay(30);
-	//while( ! ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC)); //TODO test if this works.
+	ADC_ClearFlag(ADC2, ADC_FLAG_EOC); //Clear EOC flag
 
 	ADC_SoftwareStartConvCmd(ADC2, ENABLE);
 
-	 while(ADC_GetFlagStatus(ADC2, ADC_FLAG_EOC) == RESET);
-
-	//ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
-
-	//uDelay(5);
+	while(ADC_GetFlagStatus(ADC2, ADC_FLAG_EOC) == 0);
 
 	result = (ADC_GetConversionValue(ADC2));
 
@@ -59,17 +53,13 @@ word read_ir_left(void) {
 	GPIO_ResetBits(PORT_ADX_MUX,PIN_ADC_SELECT0);
 	GPIO_ResetBits(PORT_ADX_MUX,PIN_ADC_SELECT1);
 
-	//uDelay(30);
+	ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
 
 	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 
-	while(ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET);
-
-	//uDelay(5);
+	while(ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == 0);
 
 	result = (ADC_GetConversionValue(ADC1));
-
-	//ADC_ClearFlag(ADC1, ADC_FLAG_EOC); //Clear EOC flag
 
 	//Disable the sensor again
 	GPIO_ResetBits(PORT_IR_LEFT, PIN_IR_LEFT_MOTP);

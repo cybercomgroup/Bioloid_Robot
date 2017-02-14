@@ -316,240 +316,240 @@ const struct //
  {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
 {0,0,0,0,0}, {2000,2000,1000,1000,2000}
 };
-//
-//const struct // R blocking
-//{
-//   const uint8 JointFlexibility[18];
-//   const uint8 NextPage;
-//   const uint8 ExitPage;
-//   const uint8 RepeatTime;
-//   const uint8 SpeedRate10;
-//   const uint8 InertialForce;
-//   const uint8 Steps;
-//   const uint32 StepValues[1][6];
-//   const uint16 PauseTime[1];
-//   const uint16 PlayTime[1];
-//} MotionPage14 PROGMEM = {
-//{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
-//14, 15, 1, 12, 4, 1,
-//{{1192886657,2983141898,1477767546,2185824799,336716545,1880083079}},
-//{400}, {600}
-//};
-//
-//const struct //
-//{
-//   const uint8 JointFlexibility[18];
-//   const uint8 NextPage;
-//   const uint8 ExitPage;
-//   const uint8 RepeatTime;
-//   const uint8 SpeedRate10;
-//   const uint8 InertialForce;
-//   const uint8 Steps;
-//   const uint32 StepValues[2][6];
-//   const uint16 PauseTime[2];
-//   const uint16 PlayTime[2];
-//} MotionPage15 PROGMEM = {
-//{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
-//0, 0, 1, 15, 4, 2,
-//{{911814964,3000027622,1481961980,2160626414,270400239,1141891587},
-// {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
-//{200,0}, {1000,1000}
-//};
-//
-//const struct // L blocking
-//{
-//   const uint8 JointFlexibility[18];
-//   const uint8 NextPage;
-//   const uint8 ExitPage;
-//   const uint8 RepeatTime;
-//   const uint8 SpeedRate10;
-//   const uint8 InertialForce;
-//   const uint8 Steps;
-//   const uint32 StepValues[1][6];
-//   const uint16 PauseTime[1];
-//   const uint16 PlayTime[1];
-//} MotionPage16 PROGMEM = {
-//{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
-//16, 17, 1, 12, 4, 1,
-//{{802625848,2676992539,1477767670,2706309854,1893562943,1066123782}},
-//{400}, {600}
-//};
-//
-//const struct //
-//{
-//   const uint8 JointFlexibility[18];
-//   const uint8 NextPage;
-//   const uint8 ExitPage;
-//   const uint8 RepeatTime;
-//   const uint8 SpeedRate10;
-//   const uint8 InertialForce;
-//   const uint8 Steps;
-//   const uint32 StepValues[2][6];
-//   const uint16 PauseTime[2];
-//   const uint16 PlayTime[2];
-//} MotionPage17 PROGMEM = {
-//{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
-//0, 0, 1, 15, 4, 2,
-//{{911814964,3000027622,1481961980,2160626414,270400239,1141891587},
-// {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
-//{200,0}, {1000,1000}
-//};
-//
-//const struct // L kick
-//{
-//   const uint8 JointFlexibility[18];
-//   const uint8 NextPage;
-//   const uint8 ExitPage;
-//   const uint8 RepeatTime;
-//   const uint8 SpeedRate10;
-//   const uint8 InertialForce;
-//   const uint8 Steps;
-//   const uint32 StepValues[6][6];
-//   const uint16 PauseTime[6];
-//   const uint16 PlayTime[6];
-//} MotionPage18 PROGMEM = {
-//{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
-//0, 0, 1, 15, 4, 6,
-//{{987275543,3121508913,1486146077,2441802393,1205244528,1691474501},
-// {987275543,3121508913,1486154250,2525688581,1205682800,1255268935},
-// {987275543,3121508913,1486154250,2525791011,1204822640,2521948743},
-// {987275543,3121508913,1486154250,2525688581,1205682800,1255268935},
-// {987275543,3121508913,1486146077,2441802393,1205244528,1691474501},
-// {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
-//{0,0,400,0,0,0}, {1000,400,200,600,1000,1000}
-//};
-//
-//const struct // R kick
-//{
-//   const uint8 JointFlexibility[18];
-//   const uint8 NextPage;
-//   const uint8 ExitPage;
-//   const uint8 RepeatTime;
-//   const uint8 SpeedRate10;
-//   const uint8 InertialForce;
-//   const uint8 Steps;
-//   const uint32 StepValues[6][6];
-//   const uint16 PauseTime[6];
-//   const uint16 PlayTime[6];
-//} MotionPage19 PROGMEM = {
-//{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
-//0, 0, 1, 15, 4, 6,
-//{{987275543,3121508913,1502931385,2022388385,1263993452,1674432959},
-// {987275543,3121508913,1486154149,2143802017,366412500,1674428862},
-// {987275543,3121508913,1486154149,2143740527,2128019878,1674428862},
-// {987275543,3121508913,1486154149,2143802017,366412500,1674428862},
-// {987275543,3121508913,1502931385,2064331425,1263993452,1674432959},
-// {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
-//{0,0,400,0,0,0}, {1000,400,200,600,1000,1000}
-//};
-//
-//const struct // R attack
-//{
-//   const uint8 JointFlexibility[18];
-//   const uint8 NextPage;
-//   const uint8 ExitPage;
-//   const uint8 RepeatTime;
-//   const uint8 SpeedRate10;
-//   const uint8 InertialForce;
-//   const uint8 Steps;
-//   const uint32 StepValues[4][6];
-//   const uint16 PauseTime[4];
-//   const uint16 PlayTime[4];
-//} MotionPage20 PROGMEM = {
-//{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
-//0, 0, 1, 15, 32, 4,
-//{{1947400521,3183815352,1507129816,2492033700,878127749,1712304652},
-// {2211428868,3582997337,1481963951,3070794280,135422705,2030942937},
-// {1188510001,3029207616,1481964027,2164816615,144630514,1120918020},
-// {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
-//{0,296,200,0}, {400,96,1000,1496}
-//};
-//
-//const struct // L attack
-//{
-//   const uint8 JointFlexibility[18];
-//   const uint8 NextPage;
-//   const uint8 ExitPage;
-//   const uint8 RepeatTime;
-//   const uint8 SpeedRate10;
-//   const uint8 InertialForce;
-//   const uint8 Steps;
-//   const uint32 StepValues[4][6];
-//   const uint16 PauseTime[4];
-//   const uint16 PlayTime[4];
-//} MotionPage21 PROGMEM = {
-//{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
-//0, 0, 1, 15, 32, 4,
-//{{1745975560,2911517530,1477755309,2311772882,1184461415,1586469385},
-// {2182054057,2126852601,1477767459,2483993324,1826552347,1133064776},
-// {1188510001,3029207616,1481964027,2164816615,144630514,1120918020},
-// {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
-//{0,296,200,0}, {400,96,1000,1496}
-//};
-//
-//const struct // F attack
-//{
-//   const uint8 JointFlexibility[18];
-//   const uint8 NextPage;
-//   const uint8 ExitPage;
-//   const uint8 RepeatTime;
-//   const uint8 SpeedRate10;
-//   const uint8 InertialForce;
-//   const uint8 Steps;
-//   const uint32 StepValues[7][6];
-//   const uint16 PauseTime[7];
-//   const uint16 PlayTime[7];
-//} MotionPage22 PROGMEM = {
-//{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
-//0, 0, 1, 15, 32, 7,
-//{{1784191609,3112510002,1481964028,2198526628,1184311913,1712316940},
-// {1783822969,2147820032,1452603882,2198739620,1972841073,1460560316},
-// {2853447831,2651742767,1729321465,2344716714,357599813,1112375824},
-// {1917962531,2785983002,1729321465,2344876833,442178295,814580270},
-// {2395873830,1984224100,1481961970,2202123208,509358875,957334023},
-// {1653844232,3184407088,1486154240,2143454127,161401537,1334837759},
-// {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
-//{0,0,600,0,0,0,0}, {200,200,200,400,1000,1000,1000}
-//};
-//
-//const struct // Defence
-//{
-//   const uint8 JointFlexibility[18];
-//   const uint8 NextPage;
-//   const uint8 ExitPage;
-//   const uint8 RepeatTime;
-//   const uint8 SpeedRate10;
-//   const uint8 InertialForce;
-//   const uint8 Steps;
-//   const uint32 StepValues[1][6];
-//   const uint16 PauseTime[1];
-//   const uint16 PlayTime[1];
-//} MotionPage23 PROGMEM = {
-//{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
-//23, 24, 1, 10, 32, 1,
-//{{765085990,3058651669,1481961980,2160616179,299746033,1133502979}},
-//{0}, {400}
-//};
-//
-//const struct //
-//{
-//   const uint8 JointFlexibility[18];
-//   const uint8 NextPage;
-//   const uint8 ExitPage;
-//   const uint8 RepeatTime;
-//   const uint8 SpeedRate10;
-//   const uint8 InertialForce;
-//   const uint8 Steps;
-//   const uint32 StepValues[2][6];
-//   const uint16 PauseTime[2];
-//   const uint16 PlayTime[2];
-//} MotionPage24 PROGMEM = {
-//{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
-//0, 0, 1, 8, 32, 2,
-//{{765085990,3058651669,1486162427,2148047596,521935558,1313856000},
-// {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
-//{0,0}, {496,496}
-//};
+
+const struct // R blocking
+{
+   const uint8 JointFlexibility[18];
+   const uint8 NextPage;
+   const uint8 ExitPage;
+   const uint8 RepeatTime;
+   const uint8 SpeedRate10;
+   const uint8 InertialForce;
+   const uint8 Steps;
+   const uint32 StepValues[1][6];
+   const uint16 PauseTime[1];
+   const uint16 PlayTime[1];
+} MotionPage14 PROGMEM = {
+{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
+14, 15, 1, 12, 4, 1,
+{{1192886657,2983141898,1477767546,2185824799,336716545,1880083079}},
+{400}, {600}
+};
+
+const struct //
+{
+   const uint8 JointFlexibility[18];
+   const uint8 NextPage;
+   const uint8 ExitPage;
+   const uint8 RepeatTime;
+   const uint8 SpeedRate10;
+   const uint8 InertialForce;
+   const uint8 Steps;
+   const uint32 StepValues[2][6];
+   const uint16 PauseTime[2];
+   const uint16 PlayTime[2];
+} MotionPage15 PROGMEM = {
+{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
+0, 0, 1, 15, 4, 2,
+{{911814964,3000027622,1481961980,2160626414,270400239,1141891587},
+ {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
+{200,0}, {1000,1000}
+};
+
+const struct // L blocking
+{
+   const uint8 JointFlexibility[18];
+   const uint8 NextPage;
+   const uint8 ExitPage;
+   const uint8 RepeatTime;
+   const uint8 SpeedRate10;
+   const uint8 InertialForce;
+   const uint8 Steps;
+   const uint32 StepValues[1][6];
+   const uint16 PauseTime[1];
+   const uint16 PlayTime[1];
+} MotionPage16 PROGMEM = {
+{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
+16, 17, 1, 12, 4, 1,
+{{802625848,2676992539,1477767670,2706309854,1893562943,1066123782}},
+{400}, {600}
+};
+
+const struct //
+{
+   const uint8 JointFlexibility[18];
+   const uint8 NextPage;
+   const uint8 ExitPage;
+   const uint8 RepeatTime;
+   const uint8 SpeedRate10;
+   const uint8 InertialForce;
+   const uint8 Steps;
+   const uint32 StepValues[2][6];
+   const uint16 PauseTime[2];
+   const uint16 PlayTime[2];
+} MotionPage17 PROGMEM = {
+{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
+0, 0, 1, 15, 4, 2,
+{{911814964,3000027622,1481961980,2160626414,270400239,1141891587},
+ {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
+{200,0}, {1000,1000}
+};
+
+const struct // L kick
+{
+   const uint8 JointFlexibility[18];
+   const uint8 NextPage;
+   const uint8 ExitPage;
+   const uint8 RepeatTime;
+   const uint8 SpeedRate10;
+   const uint8 InertialForce;
+   const uint8 Steps;
+   const uint32 StepValues[6][6];
+   const uint16 PauseTime[6];
+   const uint16 PlayTime[6];
+} MotionPage18 PROGMEM = {
+{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
+0, 0, 1, 15, 4, 6,
+{{987275543,3121508913,1486146077,2441802393,1205244528,1691474501},
+ {987275543,3121508913,1486154250,2525688581,1205682800,1255268935},
+ {987275543,3121508913,1486154250,2525791011,1204822640,2521948743},
+ {987275543,3121508913,1486154250,2525688581,1205682800,1255268935},
+ {987275543,3121508913,1486146077,2441802393,1205244528,1691474501},
+ {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
+{0,0,400,0,0,0}, {1000,400,200,600,1000,1000}
+};
+
+const struct // R kick
+{
+   const uint8 JointFlexibility[18];
+   const uint8 NextPage;
+   const uint8 ExitPage;
+   const uint8 RepeatTime;
+   const uint8 SpeedRate10;
+   const uint8 InertialForce;
+   const uint8 Steps;
+   const uint32 StepValues[6][6];
+   const uint16 PauseTime[6];
+   const uint16 PlayTime[6];
+} MotionPage19 PROGMEM = {
+{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
+0, 0, 1, 15, 4, 6,
+{{987275543,3121508913,1502931385,2022388385,1263993452,1674432959},
+ {987275543,3121508913,1486154149,2143802017,366412500,1674428862},
+ {987275543,3121508913,1486154149,2143740527,2128019878,1674428862},
+ {987275543,3121508913,1486154149,2143802017,366412500,1674428862},
+ {987275543,3121508913,1502931385,2064331425,1263993452,1674432959},
+ {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
+{0,0,400,0,0,0}, {1000,400,200,600,1000,1000}
+};
+
+const struct // R attack
+{
+   const uint8 JointFlexibility[18];
+   const uint8 NextPage;
+   const uint8 ExitPage;
+   const uint8 RepeatTime;
+   const uint8 SpeedRate10;
+   const uint8 InertialForce;
+   const uint8 Steps;
+   const uint32 StepValues[4][6];
+   const uint16 PauseTime[4];
+   const uint16 PlayTime[4];
+} MotionPage20 PROGMEM = {
+{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
+0, 0, 1, 15, 32, 4,
+{{1947400521,3183815352,1507129816,2492033700,878127749,1712304652},
+ {2211428868,3582997337,1481963951,3070794280,135422705,2030942937},
+ {1188510001,3029207616,1481964027,2164816615,144630514,1120918020},
+ {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
+{0,296,200,0}, {400,96,1000,1496}
+};
+
+const struct // L attack
+{
+   const uint8 JointFlexibility[18];
+   const uint8 NextPage;
+   const uint8 ExitPage;
+   const uint8 RepeatTime;
+   const uint8 SpeedRate10;
+   const uint8 InertialForce;
+   const uint8 Steps;
+   const uint32 StepValues[4][6];
+   const uint16 PauseTime[4];
+   const uint16 PlayTime[4];
+} MotionPage21 PROGMEM = {
+{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
+0, 0, 1, 15, 32, 4,
+{{1745975560,2911517530,1477755309,2311772882,1184461415,1586469385},
+ {2182054057,2126852601,1477767459,2483993324,1826552347,1133064776},
+ {1188510001,3029207616,1481964027,2164816615,144630514,1120918020},
+ {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
+{0,296,200,0}, {400,96,1000,1496}
+};
+
+const struct // F attack
+{
+   const uint8 JointFlexibility[18];
+   const uint8 NextPage;
+   const uint8 ExitPage;
+   const uint8 RepeatTime;
+   const uint8 SpeedRate10;
+   const uint8 InertialForce;
+   const uint8 Steps;
+   const uint32 StepValues[7][6];
+   const uint16 PauseTime[7];
+   const uint16 PlayTime[7];
+} MotionPage22 PROGMEM = {
+{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
+0, 0, 1, 15, 32, 7,
+{{1784191609,3112510002,1481964028,2198526628,1184311913,1712316940},
+ {1783822969,2147820032,1452603882,2198739620,1972841073,1460560316},
+ {2853447831,2651742767,1729321465,2344716714,357599813,1112375824},
+ {1917962531,2785983002,1729321465,2344876833,442178295,814580270},
+ {2395873830,1984224100,1481961970,2202123208,509358875,957334023},
+ {1653844232,3184407088,1486154240,2143454127,161401537,1334837759},
+ {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
+{0,0,600,0,0,0,0}, {200,200,200,400,1000,1000,1000}
+};
+
+const struct // Defence
+{
+   const uint8 JointFlexibility[18];
+   const uint8 NextPage;
+   const uint8 ExitPage;
+   const uint8 RepeatTime;
+   const uint8 SpeedRate10;
+   const uint8 InertialForce;
+   const uint8 Steps;
+   const uint32 StepValues[1][6];
+   const uint16 PauseTime[1];
+   const uint16 PlayTime[1];
+} MotionPage23 PROGMEM = {
+{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
+23, 24, 1, 10, 32, 1,
+{{765085990,3058651669,1481961980,2160616179,299746033,1133502979}},
+{0}, {400}
+};
+
+const struct //
+{
+   const uint8 JointFlexibility[18];
+   const uint8 NextPage;
+   const uint8 ExitPage;
+   const uint8 RepeatTime;
+   const uint8 SpeedRate10;
+   const uint8 InertialForce;
+   const uint8 Steps;
+   const uint32 StepValues[2][6];
+   const uint16 PauseTime[2];
+   const uint16 PlayTime[2];
+} MotionPage24 PROGMEM = {
+{5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5},
+0, 0, 1, 8, 32, 2,
+{{765085990,3058651669,1486162427,2148047596,521935558,1313856000},
+ {987275543,3121508913,1502925307,2164959914,1008237191,1578097156}},
+{0,0}, {496,496}
+};
 
 const struct // Sit down
 {

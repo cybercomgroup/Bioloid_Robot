@@ -103,9 +103,7 @@ int main(void)
 
 	Timer_Configuration();
 
-	printf("Init ADC... ");
 	ADC_Configuration();
-	printf("Done.\r\n");
 
 	/* high level init fn, pings the DXLs to check their status.
 	   Here with max 3 retires on failure. */
@@ -131,6 +129,7 @@ int main(void)
 
 	testIR();
 	//testTimeFns();
+	//dxl_test2();
 
 	printf("\r\nProgram finished. Have a nice day!\r\n");
 	return 0;
