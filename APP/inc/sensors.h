@@ -1,12 +1,7 @@
 #include "hw_functions.h"
 #include "stm32f10x_gpio.h"
 
-typedef enum {LEFT, RIGHT} ir;
 
-/* THESE PORTS ARE CHOSEN ARBITRARILY AND ARE INCORRECT!
- * PLEASE TEST ON THE HARDWARE TO VERIFY!
- *
- * Check stm32f10x_map.h for port definitions. */
 #define PORT_IR_LEFT GPIOA
 #define PORT_IR_RIGHT GPIOB
 
@@ -22,14 +17,9 @@ typedef enum {LEFT, RIGHT} ir;
 
 #define PIN_IR_RIGHT_MOTM		   GPIO_Pin_9
 
-#define ADC_LEFT			       ADC1
-
-#define ADC_RIGHT				   ADC6
-
 //Used with the ADC multiplexer to select signal source for conversion
-#define PIN_ADC_SELECT0         GPIO_Pin_1
-#define PIN_ADC_SELECT1         GPIO_Pin_2
+#define PIN_ADC_SELECT0            GPIO_Pin_1
+#define PIN_ADC_SELECT1            GPIO_Pin_2
 
-word read_ir_status(ir ir_id);
 word read_ir_right(void);
 word read_ir_left(void);

@@ -4,6 +4,7 @@
 #include "dynamixel.h"
 #include "printf.h"
 #include "pose.h"
+#include "rc100.h"
 #include "system_calls.h"
 #include "mem_attrs.h"
 #include "sensors.h"
@@ -12,7 +13,7 @@
 
 //TODO: Move this stuff to a suitable header file:
 /* --- */
-#define MAX_OBSTACLE_DISTANCE 50
+#define MAX_OBSTACLE_DISTANCE 200
 
 typedef enum {
 	CMD_STOP 			= 0,
@@ -53,9 +54,59 @@ uint16 speeds[NUM_AX12_SERVOS];
 
 //TODO: Most of these functions probably belong in another class.
 
-void controller_interpret_command(void) {
-	/* Write command to a global variable here, if a new one has been received */
-	/* A cool idea would be to use the rc100 controller for this. */
+/* Returns -1 if there is no new input, otherwise returns the data sent
+ * from the controller.  */
+void interpret_command(int cmd) {
+	if (cmd & CMD_STOP) {
+		current_command = CMD_STOP;
+		//Do some stuff to make sure that the robot finishes its current motion!
+	} else if (cmd & CMD_WALK_FORWARD) {
+
+	} //Etc....
+}
+
+/*
+ * Reads input from the remote. Returns 1 if successful, otherwise 0.
+ */
+int controller_read_input(void) {
+
+	if (rc100_check()) {
+		interpret_command(rc100_read_data);
+		return 1;
+	}
+	return 0;
+}
+
+void update_walk(void) {
+	/* Here we need to do the following:
+	 *
+	 * 1: Check if the motors are at their goal position.
+	 * 2: If not, do nothing. Else, find the next motion page
+	 *	  in our current walk sequence (forward or backward).
+	 */
+}
+
+void evaluate_current_command(void) {
+	switch(current_command) {
+	case CMD_STOP:
+		break;
+	case CMD_WALK_FORWARD:
+		update_walk();
+		break;
+	case CMD_WALK_BACKWARD:
+		update_walk();
+		break;
+	case CMD_WALK_AND_GRAB:
+		break;
+	case CMD_GRAB:
+		break;
+	case CMD_TURN_LEFT:
+		break;
+	case CMD_TURN_RIGHT:
+		break;
+	case CMD_WAVE:
+		break;
+	}
 }
 
 void issue_command(command cmd) {
@@ -71,15 +122,6 @@ void dxl_test1();
 void dxl_test2();
 void testTimeFns();
 void testIR();
-
-void update_walk(void) {
-	/* Here we need to do the following:
-	 *
-	 * 1: Check if the motors are at their goal position.
-	 * 2: If not, do nothing. Else, find the next motion page
-	 *	  in our current walk sequence (forward or backward).
-	 */
-}
 
 int main(void)
 {
@@ -103,6 +145,9 @@ int main(void)
 
 	Timer_Configuration();
 
+	/* Enable ZigBee receiver for rc100 controller */
+	USART_Configuration(USART_ZIGBEE, 57600);
+
 	printf("Init ADC... ");
 	ADC_Configuration();
 	printf("Done.\r\n");
@@ -115,6 +160,9 @@ int main(void)
 		printf("DXL init failed, aborting.\r\n");
 		return 0;
 	}
+
+	/* Initialize controller */
+	rc100_init();
 
 	printf("Press start!!.\r\n");
 	start_button_pressed = 1;
@@ -208,14 +256,14 @@ void testAbsFn() {
 	printf("Testing abs on 1 and -1: %d, %d \r\n", abs(1), abs(-1));
 }
 
+/* This is the main program.... should be renamed as such. */
 void testIR() {
-	int i = 0, ir_left, ir_right;
-	while(i < 10) {
-		//i++; // limit number of iterations
+	int ir_left, ir_right;
+	while(1) {
 
-
-		/* Interpret command from controller */
-		controller_interpret_command();
+		/* Interpret command from controller.
+		 * This function automatically sets the next command if applicable. */
+		controller_read_input();
 
 		/* Read data from sensors */
 		ir_left = read_ir_left();
@@ -239,11 +287,7 @@ void testIR() {
 
 		/* Read gyro sensors? */
 
-		/* Walk */
-		if (current_command == CMD_WALK_FORWARD || current_command == CMD_WALK_BACKWARD) {
-			update_walk();
-		}
-
+		evaluate_current_command();
 
 	}
 }

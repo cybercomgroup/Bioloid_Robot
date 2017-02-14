@@ -251,6 +251,20 @@ void USART_Configuration(u8 PORT, u32 baudrate)
 		/* Enable the USART3 */
 		USART_Cmd(USART3, ENABLE);
 	}
+
+	else if (PORT == USART_ZIGBEE) {
+		USART_DeInit(UART5);
+		mDelay(10);
+		/* Configure the UART5 */
+		USART_Init(UART5, &USART_InitStructure);
+
+		/* Enable UART5 Receive and Transmit interrupts */
+		USART_ITConfig(UART5, USART_IT_RXNE, ENABLE);
+
+		/* Enable the UART5 */
+		USART_Cmd(UART5, ENABLE);
+
+	}
 }
 
 void SysTick_Configuration(void)

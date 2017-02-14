@@ -16,6 +16,7 @@
 #define PIN_PC_RXD              GPIO_Pin_11
 
 #define USART_DXL			    0
+#define USART_ZIGBEE			1
 #define USART_PC			    2
 
 #define CCR1_VAL				100 // 1 ms
