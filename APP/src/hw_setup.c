@@ -184,6 +184,20 @@ void ADC_Configuration(void)
 
 	/* Start ADC1 Software Conversion */
 	ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+
+
+	/* Init ADC2 with same config as ADC1 */
+	ADC_Init(ADC2, &ADC_InitStructure);
+	ADC_RegularChannelConfig(ADC2, ADC_Channel_5, 1 , ADC_SampleTime_239Cycles5); // TODO to understand: why ADC_Channel_5 here?
+	ADC_Cmd(ADC2, ENABLE);
+
+	ADC_ResetCalibration(ADC2);
+	while(ADC_GetResetCalibrationStatus(ADC2));
+
+	ADC_StartCalibration(ADC2);
+	while(ADC_GetCalibrationStatus(ADC2));
+
+	ADC_SoftwareStartConvCmd(ADC2, ENABLE);
 }
 
 
