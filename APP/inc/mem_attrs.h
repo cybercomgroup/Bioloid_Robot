@@ -8,6 +8,11 @@
 #ifndef APP_INC_MEM_ATTRS_H_
 #define APP_INC_MEM_ATTRS_H_
 
-#define PROGMEM __attribute__((section("rodata")))
+#include "typedefs.h"
+// Declare the variable const and it should be in flash automatically
+#define PROGMEM // __attribute__((section(".rodata")))
+
+#define pgm_read_byte(x) *((char*)x)
+#define pgm_read_word(x) *((word*)x)
 
 #endif /* APP_INC_MEM_ATTRS_H_ */
