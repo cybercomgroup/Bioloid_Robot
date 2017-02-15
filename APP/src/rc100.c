@@ -1,5 +1,6 @@
 /*
  * rc100.c
+
  *
  *  Created on: 14 feb. 2017
  *      Author: kalle
@@ -18,8 +19,21 @@ volatile byte                   gb_packet_pointer = 0;
 volatile byte                   gb_packet_data_buffer[16+1+16];
 volatile byte                   gb_packet[PACKET_LENGTH+2];
 volatile byte                   gb_new_packet;
-volatile word                   gwZigbeeRxData;
 
+void RxD2Interrupt(void)
+{
+	/* Interrupt handler for the UART5 port (zigbee) */
+	if(USART_GetITStatus(UART5, USART_IT_RXNE) != RESET)
+	{
+		word temp;
+		temp = USART_ReceiveData(UART5);
+
+		gb_packet_data_buffer[gb_packet_wr_pointer] = temp;
+		gb_packet_wr_pointer++;
+		//Simple modulo
+		gb_packet_wr_pointer &= 0x1F;
+	}
+}
 
 int rc100_has_new_data() {
 	return gb_packet_rd_pointer == gb_packet_wr_pointer ? 0 : 1;
@@ -162,3 +176,4 @@ int rc100_read_data(void) {
 	return (int)gw_rcv_data;
 
 }
+

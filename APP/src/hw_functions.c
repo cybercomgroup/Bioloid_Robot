@@ -5,6 +5,7 @@
 
 #include "hw_functions.h"
 #include "hw_setup.h"
+#include "rc100.h"
 
 /* Private variables ---------------------------------------------------------*/
 volatile byte                   gbpRxInterruptBuffer[256]; // dxl buffer
@@ -119,4 +120,6 @@ void RxD0Interrupt(void)
     if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)
 	    gbpRxInterruptBuffer[gbRxBufferWritePointer++] = USART_ReceiveData(USART1);
 }
+
+
 

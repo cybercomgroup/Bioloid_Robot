@@ -37,6 +37,7 @@
 #define PIN_ZIGBEE_RXD			GPIO_Pin_2
 #define PIN_ZIGBEE_RESET		GPIO_Pin_12
 
+void RxD2Interrupt(void);
 
 void rc100_init(void);
 

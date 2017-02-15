@@ -56,13 +56,34 @@ uint16 speeds[NUM_AX12_SERVOS];
 
 /* Returns -1 if there is no new input, otherwise returns the data sent
  * from the controller.  */
-void interpret_command(int cmd) {
-	if (cmd & CMD_STOP) {
-		current_command = CMD_STOP;
+void interpret_input(int input) {
+	command cmd;
+	if (input & RC100_BTN_U) {
+		cmd = CMD_WALK_FORWARD;
+		printf("Up!");
 		//Do some stuff to make sure that the robot finishes its current motion!
-	} else if (cmd & CMD_WALK_FORWARD) {
+	} else if (input & RC100_BTN_D) {
+		cmd = CMD_WALK_BACKWARD;
+		printf("Down!");
+	} else if (input & RC100_BTN_L) {
+		cmd = CMD_TURN_LEFT;
+		printf("Left!");
+	} else if (input & RC100_BTN_R) {
+		cmd = CMD_TURN_RIGHT;
+		printf("Right!");
+	} else if (input & RC100_BTN_1) {
 
-	} //Etc....
+	} else if (input & RC100_BTN_2) {
+
+	} else if (input & RC100_BTN_3) {
+
+	} else if (input & RC100_BTN_4) {
+
+	} else if (input & RC100_BTN_5) {
+
+	} else if (input & RC100_BTN_6) {
+
+	}
 }
 
 /*
@@ -71,7 +92,8 @@ void interpret_command(int cmd) {
 int controller_read_input(void) {
 
 	if (rc100_check()) {
-		interpret_command(rc100_read_data);
+		interpret_input(rc100_read_data);
+
 		return 1;
 	}
 	return 0;
