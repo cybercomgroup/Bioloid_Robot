@@ -61,4 +61,11 @@ uint8 executeMotionSequence();
 // Returns:  (int)	number of servos still moving
 int checkMotionStepFinished();
 
+// Function to check motions state is idle
+// Returns:  (int)	if still in a motion
+int checkMotionFinished();
+
+// set the new command flag and the next motion page to execute, when the robot goes idle.
+void setNewMotionCommand(int motionPageId);
+
 #endif /* MOTION_F_H_ */

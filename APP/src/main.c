@@ -54,6 +54,19 @@ uint16 speeds[NUM_AX12_SERVOS];
 
 //TODO: Most of these functions probably belong in another class.
 
+// Set the new current motion if the robot is not currently executing a motion
+// Return: 1 if a new motion was set, 0 if a motion already was active.
+int startMotionIfIdle(int motionPageId) {
+	printf("startMotionIfIdle %d ?" , motionPageId);
+	if (checkMotionFinished()) {
+		printf("idle!\n");
+		setNewMotionCommand(motionPageId);
+		return 1;
+	}
+	printf("not idle!\n");
+	return 0;
+}
+
 /* Returns -1 if there is no new input, otherwise returns the data sent
  * from the controller.  */
 void interpret_input(int input) {
@@ -72,13 +85,17 @@ void interpret_input(int input) {
 		cmd = CMD_TURN_RIGHT;
 		printf("Right!");
 	} else if (input & RC100_BTN_1) {
-
+		printf("Standing up.\n");
+		startMotionIfIdle(26);
 	} else if (input & RC100_BTN_2) {
-
+		printf("Kicking.\n");
+		startMotionIfIdle(18);
 	} else if (input & RC100_BTN_3) {
-
+		printf("Sitting down.\n");
+		startMotionIfIdle(25);
 	} else if (input & RC100_BTN_4) {
-
+		printf("Attaking Left. \n");
+		startMotionIfIdle(24);
 	} else if (input & RC100_BTN_5) {
 
 	} else if (input & RC100_BTN_6) {
@@ -90,7 +107,6 @@ void interpret_input(int input) {
  * Reads input from the remote. Returns 1 if successful, otherwise 0.
  */
 int controller_read_input(void) {
-
 	if (rc100_check()) {
 		interpret_input(rc100_read_data());
 
@@ -137,13 +153,15 @@ void issue_command(command cmd) {
 	 * default pose before starting a new one! */
 }
 
+void mainLoop();
+
 /* Test functions. */
 void testAbsFn();
 void run_tests();
 void dxl_test1();
 void dxl_test2();
 void testTimeFns();
-void testIR();
+void balance_left_right();
 
 int main(void)
 {
@@ -205,13 +223,86 @@ int main(void)
 
 	printf("Starting main loop.\n");
 
-	testIR();
+	mainLoop();
 	//testTimeFns();
 	//dxl_test2();
+	//balance_left_right();
 
 	printf("\nProgram finished. Have a nice day!\n");
 	return 0;
 }
+
+
+void mainLoop() {
+	int ir_left, ir_right;
+	while(1) {
+		/* Interpret command from controller.
+		 * This function automatically sets the next command if applicable. */
+		controller_read_input();
+
+		/* Read data from sensors */
+		ir_left = read_ir_left();
+		ir_right = read_ir_right();
+
+		//printf("ir left: %d, right: %d\n", ir_left, ir_right);
+		//delay_ms(500); // delay so that we dont go as fast as possible.
+
+		/* Note that higher IR readings = closer! */
+		if (ir_left > MAX_OBSTACLE_DISTANCE || ir_right > MAX_OBSTACLE_DISTANCE) {
+			/* We might want to add separate handling depending on triggering foot */
+			if (current_command == CMD_WALK_AND_GRAB) {
+				/* Try to blindly pick up whatever is in front of you. */
+				issue_command(CMD_GRAB);
+			} else {
+				/* Turn to avoid obstacle */
+				issue_command(CMD_TURN_LEFT);
+			}
+		}
+
+		/* Read gyro sensors? */
+
+		evaluate_current_command();
+
+		executeMotionSequence(); // update the current motion state (use startMotionIfIdle to start a new motion)
+	}
+}
+
+void balance_left_right() {
+	// TODO  First get into stand up pose, then use the 9 and 10 motors to balance left and right.
+
+	executeMotion(26);// stand up
+
+	int num_ids = 4;
+	u8 ids[] = {9, 10, 17, 18};
+
+	u16 speed[] = {40};
+	int joint_flex[] = {5, 5};
+	u16 offsets[] = {-50,-50};
+
+	u16 goal_pos[num_ids];
+	// read current pos
+	for (int i = 0; i < num_ids; i++) {
+		goal_pos[i] = dxl_read_word(9, DXL_PRESENT_POSITION_L);
+	}
+
+	// apply offsets.
+
+
+//	printf("ipos %d %d", ipos, ipos2);
+
+
+//	for (int i= 0;;i++) {
+//		//joint_flex[0] = i % 8;
+//		goal_pos[0] += 5;
+//		//dxl_set_joint_flexibility(1,ids, joint_flex, joint_flex);
+//		//printf("flex is now %d", joint_flex[0]);
+//		mDelay(1000);
+//	}
+
+	dxl_set_goal_speed(num_ids, ids, goal_pos, speed);
+
+}
+
 
 void run_tests() {
 
@@ -287,41 +378,6 @@ void testTimeFns() {
 
 void testAbsFn() {
 	printf("Testing abs on 1 and -1: %d, %d \n", abs(1), abs(-1));
-}
-
-/* This is the main program.... should be renamed as such. */
-void testIR() {
-	int ir_left, ir_right;
-	while(1) {
-
-		/* Interpret command from controller.
-		 * This function automatically sets the next command if applicable. */
-		controller_read_input();
-
-		/* Read data from sensors */
-		ir_left = read_ir_left();
-		ir_right = read_ir_right();
-
-		//printf("ir left: %d, right: %d\n", ir_left, ir_right);
-		//delay_ms(500); // delay so that we dont go as fast as possible.
-
-		/* Note that higher IR readings = closer! */
-		if (ir_left > MAX_OBSTACLE_DISTANCE || ir_right > MAX_OBSTACLE_DISTANCE) {
-			/* We might want to add separate handling depending on triggering foot */
-			if (current_command == CMD_WALK_AND_GRAB) {
-				/* Try to blindly pick up whatever is in front of you. */
-				issue_command(CMD_GRAB);
-			} else {
-				/* Turn to avoid obstacle */
-				issue_command(CMD_TURN_LEFT);
-			}
-		}
-
-		/* Read gyro sensors? */
-
-		evaluate_current_command();
-
-	}
 }
 
 /* Put a character to the serial terminal.

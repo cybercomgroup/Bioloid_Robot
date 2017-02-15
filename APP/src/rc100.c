@@ -7,6 +7,7 @@
  */
 
 #include "rc100.h"
+#include "typedefs.h"
 
 unsigned char gb_rcv_packet[6];
 unsigned char gb_rcv_packet_num;

@@ -706,6 +706,17 @@ int dxl_sync_write_word( int NUM_ACTUATOR, int address, const uint8 ids[], int16
 	return gbCommStatus;
 }
 
+// Sync set the joint flexibility (compliance slope values). The actual value is bit shifted
+// Vsalid values are 0-7, default value is 5, typical values are between 4-7.
+// Typically the cw and ccw values are the same.
+int dxl_set_joint_flexibility(int NUM_ACTUATOR, const uint8 ids[], uint8 cw_values[], uint8 ccw_values[]) {
+	int16 values[NUM_ACTUATOR];
+	for (int i = 0; i < NUM_ACTUATOR; i++) {
+		values[i] = dxl_makeword(cw_values[i], ccw_values[i]);
+	}
+	return dxl_sync_write_word(NUM_ACTUATOR, DXL_CW_COMPLIANCE_SLOPE, ids, values);
+}
+
 
 // Function setting goal and speed for all Dynamixel actuators at the same time
 // Uses the Sync Write instruction (also see dxl_sync_write_word)

@@ -915,6 +915,10 @@ int executeMotion(int StartPage)
 	return (int) CurrentMotion.NextPage;	
 }
 
+int checkMotionFinished() {
+	return motion_state == MOTION_STOPPED;
+}
+
 // This function executes the exit page motion for the  
 // current motion page
  void executeMotionExitPage()
@@ -929,3 +933,10 @@ int executeMotion(int StartPage)
 		executeMotion(NextPage);
 	}
 }
+
+void setNewMotionCommand(int motionPageId) {
+	bioloid_command = COMMAND_MOTIONPAGE;
+	next_motion_page = motionPageId;
+	new_command = 1;
+}
+

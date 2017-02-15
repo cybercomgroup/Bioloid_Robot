@@ -10,6 +10,11 @@
 */
 
 /*
+ *
+ * Modified by Anton Olsson / Cybercom
+ */
+
+/*
  * Communication Protocol
  *
  * Instruction Packet (TX from CM-510):
@@ -224,6 +229,11 @@ int dxl_sync_write_word( int NUM_ACTUATOR, int address, const uint8 ids[], int16
 //Returns:	commStatus
 int dxl_set_goal_speed( int NUM_ACTUATOR, const uint8 ids[], uint16 goal[], uint16 speed[] );
 
+// Sync set the joint flexibility (compliance slope values). The actual value is bit shifted
+// Vsalid values are 0-7, default value is 5, typical values are between 4-7.
+// Typically the cw and ccw values are the same.
+//Returns:	commStatus
+int dxl_set_joint_flexibility(int NUM_ACTUATOR, const uint8 ids[], uint8 cw_values[], uint8 ccw_values[]);
 
 #ifdef __cplusplus
 }
