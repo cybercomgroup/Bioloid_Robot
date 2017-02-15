@@ -92,7 +92,7 @@ void interpret_input(int input) {
 int controller_read_input(void) {
 
 	if (rc100_check()) {
-		interpret_input(rc100_read_data);
+		interpret_input(rc100_read_data());
 
 		return 1;
 	}
@@ -205,9 +205,9 @@ int main(void)
 
 	printf("Starting main loop.\n");
 
-	//testIR();
+	testIR();
 	//testTimeFns();
-	dxl_test2();
+	//dxl_test2();
 
 	printf("\nProgram finished. Have a nice day!\n");
 	return 0;
@@ -302,9 +302,8 @@ void testIR() {
 		ir_left = read_ir_left();
 		ir_right = read_ir_right();
 
-		printf("ir left: %d, right: %d\n", ir_left, ir_right);
-
-		delay_ms(500); // delay so that we dont go as fast as possible.
+		//printf("ir left: %d, right: %d\n", ir_left, ir_right);
+		//delay_ms(500); // delay so that we dont go as fast as possible.
 
 		/* Note that higher IR readings = closer! */
 		if (ir_left > MAX_OBSTACLE_DISTANCE || ir_right > MAX_OBSTACLE_DISTANCE) {

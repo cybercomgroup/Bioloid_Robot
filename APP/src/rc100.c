@@ -136,7 +136,7 @@ int rc100_check(void) {
 				{
 					gw_rcv_data = (unsigned short)((gb_rcv_packet[4] << 8) & 0xff00);
 					gw_rcv_data += gb_rcv_packet[2];
-					gw_rcv_data = 1;
+					gb_rcv_flag = 1;
 				}
 			}
 		}
