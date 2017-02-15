@@ -7,6 +7,7 @@
 
 #include "stm32f10x_map.h"
 #include "stm32f10x_lib.h"
+#include "typedefs.h"
 
 #ifndef APP_INC_RC100_H_
 #define APP_INC_RC100_H_

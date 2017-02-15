@@ -71,7 +71,7 @@ int rc100_check(void) {
 	// Fill packet buffer
 	if(gb_rcv_packet_num < 6)
 	{
-		rcv_num = zgb_hal_rx( &gb_rcv_packet[gb_rcv_packet_num], (6 - gb_rcv_packet_num) );
+		rcv_num = rc100_receive( &gb_rcv_packet[gb_rcv_packet_num], (6 - gb_rcv_packet_num) );
 		if( rcv_num != -1 )
 			gb_rcv_packet_num += rcv_num;
 	}
