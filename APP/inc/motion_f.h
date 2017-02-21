@@ -22,6 +22,24 @@
 #ifndef MOTION_F_H_
 #define MOTION_F_H_
 
+// motions from motion.h
+#define MOTION_BOW 			1
+#define MOTION_BRAVO 		2
+#define MOTION_RAP_CHEST 	5
+#define MOTION_SCRATCH_HEAD 7
+#define MOTION_PUSH_UP		8
+#define MOTION_HAND_STAND   11
+#define MOTION_BLOCK_R		14
+#define MOTION_BLOCK_L		16
+#define MOTION_KICK_L		18
+#define MOTION_KICK_R		19
+#define MOTION_ATTACK_R		20
+#define MOTION_ATTACK_L		21
+#define MOTION_ATTACK_F		22
+#define MOTION_DEFENCE		23
+#define MOTION_SIT			25
+#define MOTION_STAND		26
+
 // Initialize the motion pages by constructing a table of pointers to each page
 // Motion pages are stored in Flash (PROGMEM) - see motion.h
 void motionPageInit();

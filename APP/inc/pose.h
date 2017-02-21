@@ -54,7 +54,7 @@ void waitForPoseFinish();
 // The AX-12 manual states this as the 'no load speed' at 12V
 // We ignore the Moving Speed entry which states that 0x3FF = 114rpm
 // Instead we assume that Moving Speed 0x3FF = 59rpm
-void calculatePoseServoSpeeds(uint16 time);
+void calculatePoseServoSpeeds(uint16 time, uint16 goal_pose[NUM_AX12_SERVOS], uint16 goal_speed[NUM_AX12_SERVOS]);
 
 // Moves from the current pose to the goal pose
 // using calculated servo speeds and delay between steps
@@ -70,5 +70,11 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag);
 
 // Assume default pose (Balance - MotionPage 224)
 void moveToDefaultPose(void);
+
+void resetJointOffsets(void);
+
+void setJointOffsetById(u8 id, int16 offset);
+
+uint16 * getCurrentGoalPose();
 
 #endif /* POSE_H_ */

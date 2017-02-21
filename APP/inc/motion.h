@@ -13,23 +13,6 @@
 #include "global.h"
 #include "mem_attrs.h"
 
-#define MOTION_BOW 			1
-#define MOTION_BRAVO 		2
-#define MOTION_RAP_CHEST 	5
-#define MOTION_SCRATCH_HEAD 7
-#define MOTION_PUSH_UP		8
-#define MOTION_HAND_STAND   11
-#define MOTION_BLOCK_R		14
-#define MOTION_BLOCK_L		16
-#define MOTION_KICK_L		18
-#define MOTION_KICK_R		19
-#define MOTION_ATTACK_R		20
-#define MOTION_ATTACK_L		21
-#define MOTION_ATTACK_F		22
-#define MOTION_DEFENCE		23
-#define MOTION_SIT			25
-#define MOTION_STAND		26
-
  
 // Array showing which Dynamixel servos are enabled in motion file 
 const uint8 AX12_ENABLED[MAX_AX12_SERVOS] = {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0}; 

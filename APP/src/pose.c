@@ -2,10 +2,12 @@
  * pose.c - functions for assuming poses based on motion pages  
  *	also provides the interpolation to smooth out movement 
  * 
+ * Modified by Anton Olsson / Cybercom, 2017
+ * Based on code from C controller project by:
  * Version 0.5		31/10/2011
  * Written by Peter Lanius
- * Please send suggestions and bug fixes to PeterLanius@gmail.com
  */
+
 
 /*
  * You may freely modify and share this code, as long as you keep this
@@ -24,7 +26,7 @@
 #include "pose.h"
 #include "dynamixel.h"
 //#include "clock.h"
-//#include "walk.h"
+#include "walk.h"
 
 
 // initial robot position (MotionPage 224 - Balance)
@@ -33,7 +35,7 @@ const uint16 InitialPlayTime = 400; // 0.4s is fast enough
 
 // we keep shared variables for goal pose and speed
 uint16 goal_pose[NUM_AX12_SERVOS];
-uint16 goal_speed[NUM_AX12_SERVOS];
+
 
 // read in current servo positions to determine current pose
 // takes between 260us and 456us per servo (mainly 260us or 300us)
@@ -96,18 +98,16 @@ void waitForPoseFinish()
 // The Moving Speed control table entry states that 0x3FF = 114rpm
 // and according to Robotis this means 0x212 = 59rpm and anything greater 0x212 is also 59rpm
 
-void calculatePoseServoSpeeds(uint16 time)
+void calculatePoseServoSpeeds(uint16 time, uint16 goal_pose[NUM_AX12_SERVOS], uint16 goal_speed[NUM_AX12_SERVOS])
 {
     int i;
-	uint16  temp_goal;
-	uint16 travel[NUM_AX12_SERVOS];
+	uint16 travel;
 	uint32 factor;
 
 	// read the current pose only if we are not walking (no time)
-	// TODO uncomment?
-	//if( walk_getWalkState() == 0 ) {
-	//	readCurrentPose(READ_ALL, 0);		// takes 6ms
-	//}
+	if( walk_getWalkState() == 0 ) {
+		readCurrentPose(READ_ALL, 0);		// takes 6ms
+	}
 	
 	// TEST:
 	//printf("\nCalculate Pose Speeds. Time = %i \n", time);
@@ -118,35 +118,24 @@ void calculatePoseServoSpeeds(uint16 time)
 		// TEST:
 		//printf("\nDXL%i Current, Goal, Travel, Speed:", i+1);
 		
-		// process the joint offset values bearing in mind the different variable types
-		temp_goal = (int16) goal_pose[i] + joint_offset[i];
-		if ( temp_goal < 0 ) { 
-			goal_pose[i] = 0;		// can't go below 0
-		} 
-		else if ( temp_goal > 1023 ) {
-			goal_pose[i] = 1023;	// or above 1023
-		}
-		else {
-			goal_pose[i] = (uint16) temp_goal;
-		}
 		
+
 		// find the amount of travel for each servo
 		if( goal_pose[i] > current_pose[i]) {
-			travel[i] = goal_pose[i] - current_pose[i];
+			travel = goal_pose[i] - current_pose[i];
 		} else {
-			travel[i] = current_pose[i] - goal_pose[i];
+			travel = current_pose[i] - goal_pose[i];
 		}
 		
 		// if we are walking we simply set the current pose as the goal pose to save time
-		// TODO uncomment?
-		//if( walk_getWalkState() != 0 ) {
-		//	current_pose[i] = goal_pose[i];
-		//}
+		if( walk_getWalkState() != 0 ) {
+			current_pose[i] = goal_pose[i];
+		}
 	
 		// now we can calculate the desired moving speed
 		// for 59pm the factor is 847.46 which we round to 848
 		// we need to use a temporary 32bit integer to prevent overflow
-		factor = (uint32) 848 * travel[i]; 
+		factor = (uint32) 848 * travel;
 		goal_speed[i] = (uint16) ( factor / time );
 		// if the desired speed exceeds the maximum, we need to adjust
 		if (goal_speed[i] > 1023) goal_speed[i] = 1023;
@@ -159,6 +148,24 @@ void calculatePoseServoSpeeds(uint16 time)
 	
 }
 
+void applyOffsetsBounds(uint16 goal_pose_adjusted[NUM_AX12_SERVOS]) {
+	int16  temp_goal;
+	int i;
+	for (i=0; i<NUM_AX12_SERVOS; i++)
+	{
+		// process the joint offset values bearing in mind the different variable types
+		temp_goal = (int16) goal_pose[i] + joint_offset[i];
+		if ( temp_goal < 0 ) {
+			goal_pose_adjusted[i] = 0;		// can't go below 0
+		}
+		else if ( temp_goal > 1023 ) {
+			goal_pose_adjusted[i] = 1023;	// or above 1023
+		}
+		else {
+			goal_pose_adjusted[i] = (uint16) temp_goal;
+		}
+	}
+}
 
 // Moves from the current pose to the goal pose
 // using calculated servo speeds and delay between steps
@@ -174,20 +181,28 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 {
     int i;
 	int commStatus, errorStatus;
-	printf("setting goal pose\n");
-	// copy goal to shared variable
-	for (i=0; i<NUM_AX12_SERVOS; i++)
-		{ goal_pose[i] = goal[i]; }
+	uint16 goal_pose_adjusted[NUM_AX12_SERVOS]; // adjusted by offsets and bounds
+	uint16 goal_speed[NUM_AX12_SERVOS];
+	//printf("setting goal pose\n");
 
-	printf("calculate speeds\n");
+
+	for (i=0; i<NUM_AX12_SERVOS; i++) {
+		goal_pose[i] = goal[i];
+		goal_pose_adjusted[i] = goal[i];
+	}
+
+
+	applyOffsetsBounds(goal_pose_adjusted);
+
+	//printf("calculate speeds\n");
 
 	// do the setup and calculate speeds
-	calculatePoseServoSpeeds(time);
+	calculatePoseServoSpeeds(time, goal_pose_adjusted, goal_speed);
 
-	printf("setting goal pose done\n");
+	//printf("setting goal pose done\n");
 
 	// write out the goal positions via sync write
-	commStatus = dxl_set_goal_speed(NUM_AX12_SERVOS, AX12_IDS, goal_pose, goal_speed);
+	commStatus = dxl_set_goal_speed(NUM_AX12_SERVOS, AX12_IDS, goal_pose_adjusted, goal_speed);
 	// check for communication error or timeout
 	if(commStatus != COMM_RXSUCCESS) {
 		// there has been an error, print and break
@@ -196,16 +211,16 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 		return -1;
 	}
 
-	printf("set speeds sent\n");
+	//printf("set speeds sent\n");
 
 	// only wait for pose to finish if requested to do so
 	if( wait_flag == 1 )
 	{
-		printf("waiting for finish...");
+		//printf("waiting for finish...");
 		// wait for the movement to finish
 		waitForPoseFinish();
 
-		printf(" done!\n");
+		//printf(" done!\n");
 
 		// check that we didn't cause any alarms
 		for (i=0; i<NUM_AX12_SERVOS; i++) {
@@ -218,7 +233,7 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 				return 1;
 			}
 		}
-		printf("moveToGoalPose: all ok, read back current pose.\n");
+		//printf("moveToGoalPose: all ok, read back current pose.\n");
 		// all ok, read back current pose
 		readCurrentPose(READ_ALL, 0);	
 	}	
@@ -231,3 +246,22 @@ void moveToDefaultPose()
 	// assume default pose defined 
 	moveToGoalPose(InitialPlayTime, InitialValues, WAIT_FOR_POSE_FINISH);
 }
+
+void resetJointOffsets(void) {
+	for (int i = 0; i < NUM_AX12_SERVOS; i++) {
+		joint_offset[i] = 0;
+	}
+}
+
+void setJointOffsetById(u8 id, int16 offset){
+	if (id == 0 || id > NUM_AX12_SERVOS) {
+		printf("setJointOffsetById: invalid servo id, did you perhaps send the index?\n");
+	}
+	joint_offset[id-1] = offset;
+}
+
+uint16 * getCurrentGoalPose(){
+	return goal_pose;
+}
+
+

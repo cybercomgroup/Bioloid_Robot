@@ -784,7 +784,7 @@ unsigned long executeMotionStep(int Step)
 	}
 }
 
-// This function initializes the joint flexibility values for the motion page
+// This function initializes the joint flexibility values for the current motion page
 // Returns (int)  0  - all ok
 //				 -1  - communication error
 int setMotionPageJointFlexibility()

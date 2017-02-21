@@ -35,6 +35,7 @@ typedef enum {
 } button_state;
 /* --- */
 
+#define LEAN_SPEED_FACTOR
 
 /* Global variables */
 
@@ -46,8 +47,16 @@ volatile bool button_right_pressed = FALSE;
 volatile bool start_button_pressed = FALSE;
 volatile command current_command = CMD_STOP;
 
+uint32 last_interpret_input_millis = -1; // dummy value to check at first iteration.
+
 
 void _serial_putc(void*, char); // put a char in serial console
+
+int lean_left_right(u16 speed, u16 amount);
+#define lean_left(speed, amount) lean_left_right(speed, amount)
+#define lean_right(speed, amount) lean_left_right(speed, -amount)
+
+int8 cmd_lean_amount = 0;
 
 uint16 pose[NUM_AX12_SERVOS] = {235,788,279,744,462,561,358,666,507,516,341,682,240,783,647,376,507,516};
 uint16 speeds[NUM_AX12_SERVOS];
@@ -57,50 +66,79 @@ uint16 speeds[NUM_AX12_SERVOS];
 // Set the new current motion if the robot is not currently executing a motion
 // Return: 1 if a new motion was set, 0 if a motion already was active.
 int startMotionIfIdle(int motionPageId) {
-	printf("startMotionIfIdle %d ?" , motionPageId);
+//	printf("startMotionIfIdle %d ?" , motionPageId);
 	if (checkMotionFinished()) {
-		printf("idle!\n");
+//		printf("idle!\n");
 		setNewMotionCommand(motionPageId);
 		return 1;
 	}
-	printf("not idle!\n");
+//	printf("not idle!\n");
 	return 0;
 }
 
 /* Returns -1 if there is no new input, otherwise returns the data sent
  * from the controller.  */
 void interpret_input(int input) {
+	uint32 t = millis();
+	uint32 dt;
+	if (last_interpret_input_millis != -1)
+		dt = t - last_interpret_input_millis;
+	else
+		dt = 0;
+	last_interpret_input_millis = t;
+
 	command cmd;
 	if (input & RC100_BTN_U) {
 		cmd = CMD_WALK_FORWARD;
 		printf("Up!");
 		//Do some stuff to make sure that the robot finishes its current motion!
+
 	} else if (input & RC100_BTN_D) {
 		cmd = CMD_WALK_BACKWARD;
 		printf("Down!");
+
 	} else if (input & RC100_BTN_L) {
 		cmd = CMD_TURN_LEFT;
 		printf("Left!");
+
 	} else if (input & RC100_BTN_R) {
 		cmd = CMD_TURN_RIGHT;
 		printf("Right!");
+
 	} else if (input & RC100_BTN_1) {
 		printf("Standing up.\n");
-		startMotionIfIdle(26);
+		startMotionIfIdle(MOTION_STAND);
+
 	} else if (input & RC100_BTN_2) {
 		printf("Kicking.\n");
-		startMotionIfIdle(18);
+		startMotionIfIdle(MOTION_STAND);
+
 	} else if (input & RC100_BTN_3) {
 		printf("Sitting down.\n");
-		startMotionIfIdle(25);
-	} else if (input & RC100_BTN_4) {
-		printf("Attaking Left. \n");
-		startMotionIfIdle(24);
-	} else if (input & RC100_BTN_5) {
+		startMotionIfIdle(MOTION_SIT);
 
-	} else if (input & RC100_BTN_6) {
+	} else if (input & RC100_BTN_4) {
+		printf("Rapping chest.\n");
+		startMotionIfIdle(MOTION_RAP_CHEST);
 
 	}
+
+	if (input & RC100_BTN_5 && input & RC100_BTN_6) {
+		cmd_lean_amount = 0;
+	} else if (input & RC100_BTN_5) {
+		//printf("Attaking Right. \n");
+		//startMotionIfIdle(MOTION_ATTACK_R);
+		//lean_left(500, 30);
+		cmd_lean_amount = 30;
+	} else if (input & RC100_BTN_6) {
+		//printf("Attaking Left. \n");
+		//startMotionIfIdle(MOTION_ATTACK_L);
+		cmd_lean_amount = -30;
+	} else {
+		cmd_lean_amount = 0;
+	}
+
+	lean_left_right(500, cmd_lean_amount);
 }
 
 /*
@@ -224,7 +262,6 @@ int main(void)
 	printf("Starting main loop.\n");
 
 	mainLoop();
-	//testTimeFns();
 	//dxl_test2();
 	//balance_left_right();
 
@@ -268,39 +305,48 @@ void mainLoop() {
 }
 
 void balance_left_right() {
-	// TODO  First get into stand up pose, then use the 9 and 10 motors to balance left and right.
+	// First get into stand up pose, then use the 9 and 10 motors to balance left and right.
+	unpackMotion(1);
+	setMotionPageJointFlexibility();
+	u32 startTimeMs = executeMotionStep(1);
+	if (startTimeMs != 0) { // == 0 if failed to start executing pose.
+		printf("waitForPoseFinish... ");
+		waitForPoseFinish();
+		printf("pose finished. \n");
 
-	executeMotion(26);// stand up
+		u8 ids[] = {
+				9, 10, // hips, left and right
+				17, 18 // ankles, left and right
+		};
+		u8 joint_flex[] = {5,5,5,5};
+		//dxl_set_joint_flexibility(1, ids, joint_flex, joint_flex);
 
-	int num_ids = 4;
-	u8 ids[] = {9, 10, 17, 18};
-
-	u16 speed[] = {40};
-	int joint_flex[] = {5, 5};
-	u16 offsets[] = {-50,-50};
-
-	u16 goal_pos[num_ids];
-	// read current pos
-	for (int i = 0; i < num_ids; i++) {
-		goal_pos[i] = dxl_read_word(9, DXL_PRESENT_POSITION_L);
+		for (int i = 0; 1; i++) {
+			int16 lean = (i % 2) ? 30 : -30;
+			printf("Leaning %s (%d). \n", (i % 2) ? "left" : "right", lean);
+			lean_left_right(2000, lean);
+			waitForPoseFinish();
+		}
 	}
+}
 
-	// apply offsets.
+// Read current pose and command the servos to go to the current pose + offset to hips and ankles
+// non blocking.
+// return: 0 on successful execution
+int lean_left_right(u16 time, u16 amount) {
+	//u16 current_pose[NUM_AX12_SERVOS];
+	// read current pose
+	//for (int i = 0; i < NUM_AX12_SERVOS; i++) {
+	//	current_pose[i] = dxl_read_word(AX12_IDS[i], DXL_PRESENT_POSITION_L);
+	//}
 
-
-//	printf("ipos %d %d", ipos, ipos2);
-
-
-//	for (int i= 0;;i++) {
-//		//joint_flex[0] = i % 8;
-//		goal_pos[0] += 5;
-//		//dxl_set_joint_flexibility(1,ids, joint_flex, joint_flex);
-//		//printf("flex is now %d", joint_flex[0]);
-//		mDelay(1000);
-//	}
-
-	dxl_set_goal_speed(num_ids, ids, goal_pos, speed);
-
+	// apply offsets
+	//resetJointOffsets();
+	setJointOffsetById(9, amount);
+	setJointOffsetById(10, amount);
+	setJointOffsetById(17, amount);
+	setJointOffsetById(18, amount);
+	return moveToGoalPose(time, getCurrentGoalPose(), 0);
 }
 
 
