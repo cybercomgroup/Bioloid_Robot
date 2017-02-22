@@ -5,9 +5,10 @@
  *      Author: kalle
  */
 
-
-#include "sensors.h"
+#include "typedefs.h"
+#include "gyro.h"
 #include "printf.h"
+#include "time.h"
 
 /* Globals */
 unsigned long last_read = 0;
@@ -28,7 +29,7 @@ gyro pitch_data;
 gyro roll_data;
 
 /* Function definitions */
-void gyro_init(gyro *g, const float q_angle, const float q_gyro, const float r_angle)
+void _gyro_init(gyro *g, const float q_angle, const float q_gyro, const float r_angle)
 {
 	g->q_angle = q_angle;
 	g->q_gyro  = q_gyro;
@@ -40,9 +41,9 @@ void gyro_init(gyro *g, const float q_angle, const float q_gyro, const float r_a
 	g->p_11 = 0;
 }
 
-void gyro_setup() {
-	gyro_init(&roll_data, Q_ANGLE, Q_GYRO, R_ANGLE);
-	gyro_init(&pitch_data, Q_ANGLE, Q_GYRO, R_ANGLE);
+void gyro_init() {
+	_gyro_init(&roll_data, Q_ANGLE, Q_GYRO, R_ANGLE);
+	_gyro_init(&pitch_data, Q_ANGLE, Q_GYRO, R_ANGLE);
 	last_read = millis();
 }
 
@@ -79,7 +80,7 @@ void gyro_process()
 {
 	gyro_read();
 	unsigned long now = millis();
-	double dt = ((double)(now - last_read)) * SECONDS_PER_MILLIS;
+	double dt = (now - last_read) / 1000;
 
 	// Only process delta angles if at least 1/100 of a second has elapsed
 	if (dt >= 0.01)

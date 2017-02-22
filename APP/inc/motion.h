@@ -17,6 +17,34 @@
 // Array showing which Dynamixel servos are enabled in motion file 
 const uint8 AX12_ENABLED[MAX_AX12_SERVOS] = {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0}; 
 
+
+
+typedef struct {
+	u16 joint_pos[26];
+	u16 padding[5];
+	u8 pause; // multiply by 8 to get pause time in ms;
+	u8 time; // 1 unit = 8ms
+} motion_step;
+
+typedef struct {
+	char name[15]; // including null at the end
+	u8 repetitions;
+	u8 uk1[4];
+	u8 n_steps;
+	u8 uk1a;
+	u8 speed_rate; //multiply pause and play time, in ms, for each step, with Speed rate, then divide by 0x20 = 32 to get real time in ms.
+	u8 uk2;
+	u8 ctrl_inertial_force;
+	u8 next_page;
+	u8 exit_page;
+	u8 uk3[5];
+	u8 joint_softness[26]; // aka Compliance slope
+	u8 uk4[6];
+	motion_step steps[7];
+} motion_page;
+
+const motion_page * const motion_pointer_pages = (const motion_page *)(0x8043200);
+
 const struct // Bow
 { 
    const uint8 JointFlexibility[18]; 

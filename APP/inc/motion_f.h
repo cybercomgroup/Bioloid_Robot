@@ -49,6 +49,10 @@ void motionPageInit();
 // StartPage - number of the motion page to be unpacked
 void unpackMotion(int StartPage);
 
+// This function unpacks a motion page as stored by RoboPlus Motion.
+// StartPage - number of the motion page to be unpacked
+void unpackMotion2(int StartPage);
+
 // This function initiates the execution of a motion step in the given motion page
 // Page - number of the motion page 
 // Returns (long) start time of the step
@@ -85,5 +89,8 @@ int checkMotionFinished();
 
 // set the new command flag and the next motion page to execute, when the robot goes idle.
 void setNewMotionCommand(int motionPageId);
+
+// for debugging
+void printCurrentMotionPage();
 
 #endif /* MOTION_F_H_ */
