@@ -151,7 +151,9 @@ void interpret_input(int input) {
  * Reads input from the remote. Returns 1 if successful, otherwise 0.
  */
 int controller_read_input(void) {
+
 	if (rc100_check()) {
+		// NOTE: IF I RUN A MOTION HERE THE FIRST TIME THE MOTION START OUTS JERKY, DONT KNOW WHY!?
 		interpret_input(rc100_read_data());
 
 		return 1;
@@ -268,11 +270,9 @@ int main(void)
 
 	printf("Starting main loop.\n");
 
-	test_load_motions();
-	//mainLoop();
-	//dxl_test2();
-	//balance_left_right();
-
+	// stand up on start to work around first jerky motion by rc100 (unknown why??)
+	startMotionIfIdle(MOTION_STAND);
+	mainLoop();
 
 	printf("\nProgram finished. Have a nice day!\n");
 	return 0;
@@ -281,6 +281,7 @@ int main(void)
 
 void mainLoop() {
 	int ir_left, ir_right;
+	int x = 0;
 	while(1) {
 		/* Interpret command from controller.
 		 * This function automatically sets the next command if applicable. */
