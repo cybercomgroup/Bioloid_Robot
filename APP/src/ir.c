@@ -6,7 +6,7 @@
  */
 
 #include "printf.h"
-#include "ir.h"
+#include "sensors.h"
 
 /* This tutorial (for another microcontroller) explains well how the
  * BSR and BSRR registers (used by SetBits and ResetBits) work:
