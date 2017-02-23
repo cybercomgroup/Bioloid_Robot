@@ -1,3 +1,7 @@
+
+#ifndef SENSORS_H_
+#define SENSORS_H_
+
 #include "time.h"
 #include "hw_functions.h"
 #include "stm32f10x_gpio.h"
@@ -5,11 +9,11 @@
 #include "stm32f10x_adc.h"
 
 
-#define PORT_IR_LEFT 			   GPIOA
-#define PORT_IR_RIGHT 			   GPIOB
-
 #define PORT_GYRO				   GPIOC
 #define PORT_DMS			       GPIOA
+
+#define PORT_IR_LEFT 			   GPIOA
+#define PORT_IR_RIGHT 			   GPIOB
 
 //ADC multiplexer
 #define PORT_ADX_MUX GPIOC
@@ -22,6 +26,7 @@
 #define PIN_GYRO_PITCH_MOTM		   GPIO_Pin_7
 #define PIN_GYRO_ROLL_MOTP	       GPIO_Pin_8
 #define PIN_GYRO_ROLL_MOTM		   GPIO_Pin_9
+
 #define PIN_DMS_MOTP		       GPIO_Pin_8
 #define PIN_DMS_MOTM		       GPIO_Pin_11
 
@@ -30,11 +35,10 @@
 #define PIN_ADC_SELECT1            GPIO_Pin_2
 
 //IR
-
 word read_ir_right(void);
 word read_ir_left(void);
 
-//Gyro
+#endif
 
 void gyro_update();
 void gyro_read();

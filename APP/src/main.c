@@ -10,6 +10,7 @@
 #include "sensors.h"
 #include "string.h"
 #include "motion_f.h"
+#include "ir.h"
 
 //TODO: Move this stuff to a suitable header file:
 /* --- */
@@ -88,6 +89,9 @@ void interpret_input(int input) {
 	last_interpret_input_millis = t;
 
 	command cmd;
+	if (input & RC100_BTN_L && input & RC100_BTN_R) {
+		printCurrentMotionPage();
+	}
 	if (input & RC100_BTN_U) {
 		cmd = CMD_WALK_FORWARD;
 		printf("Up!");
@@ -123,7 +127,9 @@ void interpret_input(int input) {
 
 	}
 
-	if (input & RC100_BTN_5 && input & RC100_BTN_6) {
+
+
+	if ((input & RC100_BTN_5) &&  (input & RC100_BTN_6)) {
 		cmd_lean_amount = 0;
 	} else if (input & RC100_BTN_5) {
 		//printf("Attaking Right. \n");
@@ -200,6 +206,7 @@ void dxl_test1();
 void dxl_test2();
 void testTimeFns();
 void balance_left_right();
+void test_load_motions();
 
 int main(void)
 {
@@ -223,20 +230,21 @@ int main(void)
 
 	Timer_Configuration();
 
-
 	/* Enable ZigBee receiver for rc100 controller */
 	USART_Configuration(USART_ZIGBEE, 57600);
 
-	printf("Init ADC... ");
-
+	printf("Init ADC...\n");
 	ADC_Configuration();
 
-	printf("Loading motion pages...");
+	printf("Calbirating gyro...\n");
+	//gyro_init();
+
+	printf("Loading motion pages...\n");
 	motionPageInit();
-	printf(" Done.\n");
 
 	/* high level init fn, pings the DXLs to check their status.
 	   Here with max 3 retires on failure. */
+	printf("Init dxl...\n");
 	res = dxl_init1( 1, 3 );
 
 	if (res != 0){
@@ -245,25 +253,26 @@ int main(void)
 	}
 
 	/* Initialize controller */
+	printf("Init rc100...\n");
 	rc100_init();
 
-	printf("Press start!!.\r\n");
+	//printf("Press start!!.\r\n");
 
-	start_button_pressed = 1;
-	while (!start_button_pressed) {
+	//start_button_pressed = 1;
+	//while (!start_button_pressed) {
 		//TODO: Add some fancy blinking lights or other stuff
 
 		/* Wait here until start command given.
 		 * Presumingly, the value is changed in an interrupt handler. */
-	}
-	/* Enable interrupts */
-	//sei(); Where is this function declared?
+	//}
 
 	printf("Starting main loop.\n");
 
-	mainLoop();
+	test_load_motions();
+	//mainLoop();
 	//dxl_test2();
 	//balance_left_right();
+
 
 	printf("\nProgram finished. Have a nice day!\n");
 	return 0;
@@ -297,6 +306,7 @@ void mainLoop() {
 		}
 
 		/* Read gyro sensors? */
+		//gyro_process();
 
 		evaluate_current_command();
 
@@ -349,6 +359,27 @@ int lean_left_right(u16 time, u16 amount) {
 	return moveToGoalPose(time, getCurrentGoalPose(), 0);
 }
 
+
+void test_load_motions() {
+	printf("--- test_load_motions --- \n");
+
+	printf(" Load motion page 26 (old method)...\n");
+	unpackMotion(26);
+	printCurrentMotionPage();
+
+	printf(" Load motion page 26 (new method)...\n");
+	unpackMotion2(26);
+	printCurrentMotionPage();
+
+	printf(" Load motion page 2 (old method)...\n");
+	unpackMotion(2);
+	printCurrentMotionPage();
+	printf(" Load motion page 2 (new method)...\n");
+	unpackMotion2(2);
+	printCurrentMotionPage();
+
+	printf("--- test_load_motions done --- \n");
+}
 
 void run_tests() {
 

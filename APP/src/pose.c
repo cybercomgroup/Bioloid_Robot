@@ -40,29 +40,13 @@ uint16 goal_pose[NUM_AX12_SERVOS];
 // read in current servo positions to determine current pose
 // takes between 260us and 456us per servo (mainly 260us or 300us)
 // all up takes 5-6ms
-// Inputs:	(uint8)		read mode - all or only moving servos
-//			(uint8)		current step
-void readCurrentPose(uint8 read_mode, uint8 step)
+void readCurrentPose()
 {
 	int i;
-	if (read_mode == READ_ALL)
-	{
-		// loop over all possible actuators
-		for(i=0; i<NUM_AX12_SERVOS; i++) {
-			current_pose[i] = dxl_read_word( AX12_IDS[i], DXL_PRESENT_POSITION_L );
-		}
-	} 
-	else
-	{
-		// read only the servos that moved in this step
-		for(i=0; i<NUM_AX12_SERVOS; i++) {
-			if ( motion_step_servos_moving[step][i] > 0 )
-			{
-				current_pose[i] = dxl_read_word( AX12_IDS[i], DXL_PRESENT_POSITION_L );
-			}
-		}
+	// loop over all possible actuators
+	for(i=0; i<NUM_AX12_SERVOS; i++) {
+		current_pose[i] = dxl_read_word( AX12_IDS[i], DXL_PRESENT_POSITION_L );
 	}
-	
 }
 
 // Function to wait out any existing servo movement
@@ -106,7 +90,7 @@ void calculatePoseServoSpeeds(uint16 time, uint16 goal_pose[NUM_AX12_SERVOS], ui
 
 	// read the current pose only if we are not walking (no time)
 	if( walk_getWalkState() == 0 ) {
-		readCurrentPose(READ_ALL, 0);		// takes 6ms
+		readCurrentPose();		// takes 6ms
 	}
 	
 	// TEST:
@@ -235,7 +219,7 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 		}
 		//printf("moveToGoalPose: all ok, read back current pose.\n");
 		// all ok, read back current pose
-		readCurrentPose(READ_ALL, 0);	
+		readCurrentPose();
 	}	
 	return 0;
 }

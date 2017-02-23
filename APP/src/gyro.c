@@ -5,9 +5,10 @@
  *      Author: kalle
  */
 
-
+#include "typedefs.h"
 #include "sensors.h"
 #include "printf.h"
+#include "time.h"
 
 /* Globals */
 
@@ -19,9 +20,6 @@ word adc_gyro_center_y = 311;
 
 word gyro_pitch = 0;
 word gyro_roll = 0;
-
-/* Reads gyroscope sensor data from the ADC.
- * Writes pitch and roll to adc_gyro_x and adc_gyro_y respectively. */
 
 void gyro_update() {
 	gyro_read();

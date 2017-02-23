@@ -43,7 +43,7 @@ extern volatile int16 joint_offset[NUM_AX12_SERVOS];
 // all up takes 5-6ms for READ_ALL mode
 // Inputs:	(uint8)		read mode - all or only moving servos
 //			(uint8)		current step
-void readCurrentPose(uint8 read_mode, uint8 step);
+void readCurrentPose();
 
 // Function to wait out any existing servo movement
 void waitForPoseFinish();

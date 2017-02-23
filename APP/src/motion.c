@@ -411,7 +411,7 @@ uint8 executeMotionSequence()
 			}
 		}	
 		// no alarm has occurred, read back current pose (takes 6ms)
-		readCurrentPose(READ_ALL, 0);	
+		readCurrentPose();
 	}
 	
 	// We also need to check if we received a RESET command after alarm shutdown
@@ -628,6 +628,52 @@ uint8 executeMotionSequence()
 	return motion_state;
 }
 
+// This function unpacks a motion page as stored by RoboPlus Motion
+// StartPage - number of the motion page to be unpacked
+void unpackMotion2(int StartPage) {
+	int i;
+	const motion_page * motion = &motion_pointer_pages[StartPage-1];
+	printf("unpacking motion %i: %s\n", StartPage, motion->name);
+
+	CurrentMotion.RepeatTime = motion->repetitions;
+	CurrentMotion.Steps = motion->n_steps;
+	CurrentMotion.SpeedRate10 = 32 * 10 / motion->speed_rate; // not actually used just for comparision with old code
+	CurrentMotion.InertialForce = motion->ctrl_inertial_force;
+	CurrentMotion.NextPage = motion->next_page;
+	CurrentMotion.ExitPage = motion->exit_page;
+
+	// servo compliance slope / joint softness
+	for (i=0; i<NUM_AX12_SERVOS; i++)
+	{
+		CurrentMotion.JointFlex[i] = motion->joint_softness[i] & 0x0f; // actually oth cw and ccw is sttored in 4 bits each, here we use the same value for both
+	}
+
+	// step servo positions and step pause/execution time
+	for (int step = 0; step < CurrentMotion.Steps; step++)
+	{
+		for (i = 0; i < NUM_AX12_SERVOS; i++) {
+			CurrentMotion.StepValues[step][i] = motion->steps[step].joint_pos[i+1];
+
+			if ( CurrentMotion.StepValues[step][i] > SERVO_MAX_VALUES[i] || CurrentMotion.StepValues[step][i] < SERVO_MIN_VALUES[i] )
+			{
+				// obviously have unpacked rubbish, stop right here
+				printf("\nUnpack Motion Page %i, Step %i - rubbish data. STOP.", StartPage, step+1);
+				printf("\nServo ID%i, Step Value = %i, Min = %i, Max = %i \n", AX12_IDS[i], CurrentMotion.StepValues[step][i], SERVO_MIN_VALUES[i],SERVO_MAX_VALUES[i] );
+				exit(-1);
+			}
+		}
+
+		CurrentMotion.PauseTime[step] = motion->steps[step].pause * 8; //ms
+		CurrentMotion.PlayTime[step] = motion->steps[step].time * 8; //ms
+
+		// apply speed rate
+		CurrentMotion.PauseTime[step] = (CurrentMotion.PauseTime[step] * motion->speed_rate) / 32; //ms
+		CurrentMotion.PlayTime[step] = (CurrentMotion.PlayTime[step] * motion->speed_rate) / 32; //ms
+	}
+
+	printCurrentMotionPage();
+}
+
 // This function unpacks a motion stored in program memory (Flash) 
 // in a struct stored in RAM to allow execution
 // StartPage - number of the motion page to be unpacked
@@ -635,7 +681,7 @@ void unpackMotion(int StartPage)
 {
 	uint8 i, s, num_packed_steps;
 	uint32 packed_step_values;
-	
+
 	// first we retrieve the Compliance Slope values
 	for (i=0; i<NUM_AX12_SERVOS; i++)
 	{
@@ -648,8 +694,8 @@ void unpackMotion(int StartPage)
 	CurrentMotion.SpeedRate10 = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+3);
 	CurrentMotion.InertialForce = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+4);
 	CurrentMotion.Steps = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+5);
-	
-	// now we are ready to unpack the Step Values 
+
+	// now we are ready to unpack the Step Values
 	// 3 values are packed into one 32bit integer - so use pgm_read_word twice
 	num_packed_steps = NUM_AX12_SERVOS / 3;
 	for (s=0; s<CurrentMotion.Steps; s++)
@@ -679,7 +725,7 @@ void unpackMotion(int StartPage)
 				exit(-1);
 			}
 		}
-		
+
 	}
 
 	// and finally the play and pause times (in ms)
@@ -688,21 +734,21 @@ void unpackMotion(int StartPage)
 	{
 		CurrentMotion.PauseTime[s] = pgm_read_word(motion_pointer[StartPage]+(NUM_AX12_SERVOS+6+CurrentMotion.Steps*4*num_packed_steps)+(s*2));
 		if(CurrentMotion.PauseTime[s] != 0 && CurrentMotion.PauseTime[s] < 6500 ) {
-			CurrentMotion.PauseTime[s] = (10*CurrentMotion.PauseTime[s]) / CurrentMotion.SpeedRate10; 
+			CurrentMotion.PauseTime[s] = (10*CurrentMotion.PauseTime[s]) / CurrentMotion.SpeedRate10;
 		} else {
 			CurrentMotion.PauseTime[s] = 10 * (CurrentMotion.PauseTime[s]/CurrentMotion.SpeedRate10);
-		}		
-	}		
+		}
+	}
 	for (s=0; s<CurrentMotion.Steps; s++)
 	{
 		CurrentMotion.PlayTime[s] = pgm_read_word(motion_pointer[StartPage]+(NUM_AX12_SERVOS+6+CurrentMotion.Steps*4*num_packed_steps+CurrentMotion.Steps*2)+(s*2));
 		if(CurrentMotion.PlayTime[s] != 0 && CurrentMotion.PlayTime[s] < 6500 ) {
-			CurrentMotion.PlayTime[s] = (10*CurrentMotion.PlayTime[s]) / CurrentMotion.SpeedRate10; 
+			CurrentMotion.PlayTime[s] = (10*CurrentMotion.PlayTime[s]) / CurrentMotion.SpeedRate10;
 		} else {
 			CurrentMotion.PlayTime[s] = 10 * (CurrentMotion.PlayTime[s]/CurrentMotion.SpeedRate10);
-		}		
-	}		
-	
+		}
+	}
+
 	// Analyse which joints are moving during each step (to save time later)
 	if ( CurrentMotion.Steps > 1 )
 	{
@@ -725,19 +771,19 @@ void unpackMotion(int StartPage)
 					motion_step_servos_moving[s][i] = 1;
 			}
 		}
-		
+
 		// aggregate these to see which servos are moving at all
 		for (i=0; i<NUM_AX12_SERVOS; i++)
 		{
 			// reset the value first
 			motion_servos_moving[i] = 0;
-			
+
 			// add up the step values from above
 			for (s=1; s<CurrentMotion.Steps; s++)
 			{
 				motion_servos_moving[i] += motion_step_servos_moving[s][i];
 			}
-			
+
 			// normalise values to 1
 			if ( motion_servos_moving[i] > 0 ) motion_servos_moving[i] = 1;
 		}
@@ -751,7 +797,7 @@ void unpackMotion(int StartPage)
 				// set both arrays
 				motion_step_servos_moving[0][i] = 1;
 				motion_servos_moving[i] = 1;
-			}			
+			}
 		}
 	}
 }
@@ -938,5 +984,27 @@ void setNewMotionCommand(int motionPageId) {
 	bioloid_command = COMMAND_MOTIONPAGE;
 	next_motion_page = motionPageId;
 	new_command = 1;
+}
+
+// for debugging
+void printCurrentMotionPage() {
+	printf("motion.c: CurrentMotion:\n");
+	printf(" RepeatTime=%d \n Steps=%d \n SpeedRate10=%d \n InertialForce=%d \n NextPage=%d \n ExitPage=%d \n", CurrentMotion.RepeatTime, CurrentMotion.Steps, CurrentMotion.SpeedRate10, CurrentMotion.InertialForce, CurrentMotion.NextPage, CurrentMotion.ExitPage);
+	for (int s=0; s<=CurrentMotion.Steps; s++)
+	{
+		printf(" Steps:\n");
+		printf("   step %i: play=%d pause=%d\n  ", s, CurrentMotion.PlayTime[s], CurrentMotion.PauseTime[s]);
+		for (int i=0; i<NUM_AX12_SERVOS; i++)
+		{
+			printf("%d ", CurrentMotion.StepValues[s][i]);
+		}
+		printf("\n");
+	}
+	printf("Joint flex:\n ");
+	for (int i=0; i<NUM_AX12_SERVOS; i++)
+	{
+		printf("%d ", CurrentMotion.JointFlex[i]);
+	}
+	printf("\n");
 }
 
