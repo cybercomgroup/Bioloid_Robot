@@ -39,6 +39,7 @@
 #define MOTION_DEFENCE		23
 #define MOTION_SIT			25
 #define MOTION_STAND		26
+#define MOTION_GRAB			240
 
 // Initialize the motion pages by constructing a table of pointers to each page
 // Motion pages are stored in Flash (PROGMEM) - see motion.h

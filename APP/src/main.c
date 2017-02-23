@@ -45,7 +45,7 @@ volatile bool button_down_pressed = FALSE;
 volatile bool button_left_pressed = FALSE;
 volatile bool button_right_pressed = FALSE;
 volatile bool start_button_pressed = FALSE;
-volatile command current_command = CMD_STOP;
+volatile command current_command = CMD_WALK_AND_GRAB;
 
 uint32 last_interpret_input_millis = -1; // dummy value to check at first iteration.
 
@@ -196,6 +196,28 @@ void issue_command(command cmd) {
 	/* Set motion page etc.
 	 * We also most likely want to return to the
 	 * default pose before starting a new one! */
+	switch(cmd) {
+	case CMD_STOP:
+		break;
+	case CMD_WALK_FORWARD:
+		update_walk();
+		break;
+	case CMD_WALK_BACKWARD:
+		update_walk();
+		break;
+	case CMD_WALK_AND_GRAB:
+		break;
+	case CMD_GRAB:
+		start_motion_if_idle(MOTION_GRAB);
+		break;
+	case CMD_TURN_LEFT:
+		break;
+	case CMD_TURN_RIGHT:
+		break;
+	case CMD_WAVE:
+		break;
+	}
+	current_command = cmd;
 }
 
 void mainLoop();
