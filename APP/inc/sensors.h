@@ -45,6 +45,6 @@ word gyro_get_roll();
 
 void gyro_update();
 void gyro_read();
-void ogyro_init();
+void gyro_init();
 
 #endif

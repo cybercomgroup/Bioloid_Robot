@@ -21,9 +21,9 @@
  */
 
 #include <stdio.h>
-#include "typedefs.h"
-#include "clock.h"
 #include "pid.h"
+#import "time.h"
+#include "typedefs.h"
 
 // we assume that x and y axis use the same tuning parameters
 // since gyro and actuators are the same

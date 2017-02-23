@@ -23,7 +23,7 @@
 #ifndef PID_H_
 #define PID_H_
 
-#define PID_DIMENSION			1
+#define PID_DIMENSION			2
 
 //Constants used in some of the functions below
 #define INT_SCALE_FACTOR 1000
