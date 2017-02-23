@@ -10,7 +10,6 @@
 #include "sensors.h"
 #include "string.h"
 #include "motion_f.h"
-#include "ir.h"
 
 //TODO: Move this stuff to a suitable header file:
 /* --- */
@@ -238,9 +237,6 @@ int main(void)
 	printf("Init ADC...\n");
 	ADC_Configuration();
 
-	printf("Calbirating gyro...\n");
-	//gyro_init();
-
 	printf("Loading motion pages...\n");
 	motionPageInit();
 
@@ -258,6 +254,14 @@ int main(void)
 	printf("Init rc100...\n");
 	rc100_init();
 
+	// stand up on start to work around first jerky motion by rc100 (unknown why??)
+	//startMotionIfIdle(MOTION_STAND);
+	executeMotion(MOTION_STAND);
+
+	printf("Calbirating gyro...\n");
+	gyro_init();
+	printf("Calbirating gyro done!\n");
+
 	//printf("Press start!!.\r\n");
 
 	//start_button_pressed = 1;
@@ -269,9 +273,6 @@ int main(void)
 	//}
 
 	printf("Starting main loop.\n");
-
-	// stand up on start to work around first jerky motion by rc100 (unknown why??)
-	startMotionIfIdle(MOTION_STAND);
 	mainLoop();
 
 	printf("\nProgram finished. Have a nice day!\n");
@@ -307,7 +308,8 @@ void mainLoop() {
 		}
 
 		/* Read gyro sensors? */
-		//gyro_process();
+		gyro_update();
+		printf("Gyro values: pitch %d, roll %d\n", gyro_get_pitch(), gyro_get_roll());
 
 		evaluate_current_command();
 

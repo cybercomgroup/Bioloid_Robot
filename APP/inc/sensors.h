@@ -22,8 +22,10 @@
 #define PIN_IR_LEFT_MOTM           GPIO_Pin_1
 #define PIN_IR_RIGHT_MOTP		   GPIO_Pin_8
 #define PIN_IR_RIGHT_MOTM		   GPIO_Pin_9
+
 #define PIN_GYRO_PITCH_MOTP		   GPIO_Pin_6
 #define PIN_GYRO_PITCH_MOTM		   GPIO_Pin_7
+
 #define PIN_GYRO_ROLL_MOTP	       GPIO_Pin_8
 #define PIN_GYRO_ROLL_MOTM		   GPIO_Pin_9
 
@@ -38,7 +40,11 @@
 word read_ir_right(void);
 word read_ir_left(void);
 
-#endif
+word gyro_get_pitch();
+word gyro_get_roll();
 
 void gyro_update();
 void gyro_read();
+void ogyro_init();
+
+#endif
