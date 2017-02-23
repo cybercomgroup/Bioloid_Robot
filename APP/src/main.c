@@ -369,14 +369,14 @@ void test_load_motions() {
 	printCurrentMotionPage();
 
 	printf(" Load motion page 26 (new method)...\n");
-	unpackMotion2(26);
+	//unpackMotion2(26);
 	printCurrentMotionPage();
 
 	printf(" Load motion page 2 (old method)...\n");
 	unpackMotion(2);
 	printCurrentMotionPage();
 	printf(" Load motion page 2 (new method)...\n");
-	unpackMotion2(2);
+	//unpackMotion2(2);
 	printCurrentMotionPage();
 
 	printf("--- test_load_motions done --- \n");
