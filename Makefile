@@ -65,6 +65,7 @@ MAIN_OBJS = \
  APP/src/walk.o \
  APP/src/rc100.o \
  APP/src/gyro.o \
+ App/src/pid.o \
  
 $(MAIN_OUT_ELF): $(MAIN_OBJS) stm32f10x_lib/libstm32.a
 	$(LD) $(LDFLAGS) $(MAIN_OBJS) stm32f10x_lib/libstm32.a --output $@
