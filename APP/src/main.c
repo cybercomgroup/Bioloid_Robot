@@ -47,6 +47,10 @@ volatile bool button_right_pressed = FALSE;
 volatile bool start_button_pressed = FALSE;
 volatile command current_command = CMD_WALK_AND_GRAB;
 
+extern volatile bool new_command;             // current command
+extern volatile uint8 bioloid_command;                // current command
+extern volatile uint8 last_bioloid_command;   // last command
+
 uint32 last_interpret_input_millis = -1; // dummy value to check at first iteration.
 
 
@@ -95,6 +99,9 @@ void interpret_input(int input) {
 		cmd = CMD_WALK_FORWARD;
 		printf("Up!");
 		//Do some stuff to make sure that the robot finishes its current motion!
+
+		startMotionIfIdle(32);
+		bioloid_command = COMMAND_WALK_FORWARD;
 
 	} else if (input & RC100_BTN_D) {
 		cmd = CMD_WALK_BACKWARD;
@@ -208,7 +215,7 @@ void issue_command(command cmd) {
 	case CMD_WALK_AND_GRAB:
 		break;
 	case CMD_GRAB:
-		start_motion_if_idle(MOTION_GRAB);
+		startMotionIfIdle(MOTION_GRAB);
 		break;
 	case CMD_TURN_LEFT:
 		break;
@@ -284,6 +291,7 @@ int main(void)
 	gyro_init();
 	printf("Calbirating gyro done!\n");
 
+
 	//printf("Press start!!.\r\n");
 
 	//start_button_pressed = 1;
@@ -294,8 +302,12 @@ int main(void)
 		 * Presumingly, the value is changed in an interrupt handler. */
 	//}
 
+	//startMotionIfIdle(32);
+	//bioloid_command = COMMAND_WALK_FORWARD;
+
 	printf("Starting main loop.\n");
 	mainLoop();
+	//test_load_motions();
 
 	printf("\nProgram finished. Have a nice day!\n");
 	return 0;
@@ -304,7 +316,6 @@ int main(void)
 
 void mainLoop() {
 	int ir_left, ir_right;
-	int x = 0;
 	while(1) {
 		/* Interpret command from controller.
 		 * This function automatically sets the next command if applicable. */
@@ -331,11 +342,12 @@ void mainLoop() {
 
 		/* Read gyro sensors? */
 		gyro_update();
-		printf("Gyro values: pitch %d, roll %d\n", gyro_get_pitch(), gyro_get_roll());
+		//printf("Gyro values: pitch %d, roll %d\n", gyro_get_pitch(), gyro_get_roll());
 
 		evaluate_current_command();
 
 		executeMotionSequence(); // update the current motion state (use startMotionIfIdle to start a new motion)
+		walk_shift();
 	}
 }
 
@@ -385,24 +397,44 @@ int lean_left_right(u16 time, u16 amount) {
 }
 
 
+void _test_load_motions(int mp) {
+	u32 t0 = micros();
+	printf(" Load motion page %d (old method)...\n", mp);
+	unpackMotion(mp);
+	printCurrentMotionPage();
+	u32 t1 = micros() - t0;
+
+	printf("Old method took %u us\n", t1);
+
+	t0 = micros();
+	printf(" Load motion page %d (new method)...\n", mp);
+	unpackMotion2(mp);
+	printCurrentMotionPage();
+	t1 = micros() - t0;
+
+	printf("New method took %u us\n", t1);
+}
+
+// use this to check that the new motion unpacker works the same as the old one.
+// need to set use_old_motions_code in motion_f.h to 1 for comparision to be useful.
 void test_load_motions() {
 	printf("--- test_load_motions --- \n");
 
-	printf(" Load motion page 26 (old method)...\n");
-	unpackMotion(26);
-	printCurrentMotionPage();
+#if !use_old_motions_code
+	printf("NOT USING OLD MOTIONS CODE!!!! please set test_load_motions to 1 for this function to work...\n");
+#else
+	_test_load_motions(32);
+	_test_load_motions(33);
 
-	printf(" Load motion page 26 (new method)...\n");
-	//unpackMotion2(26);
-	printCurrentMotionPage();
+	_test_load_motions(34);
+	_test_load_motions(35);
 
-	printf(" Load motion page 2 (old method)...\n");
-	unpackMotion(2);
-	printCurrentMotionPage();
-	printf(" Load motion page 2 (new method)...\n");
-	//unpackMotion2(2);
-	printCurrentMotionPage();
+	_test_load_motions(36);
+	_test_load_motions(37);
 
+	_test_load_motions(38);
+	_test_load_motions(39);
+#endif
 	printf("--- test_load_motions done --- \n");
 }
 

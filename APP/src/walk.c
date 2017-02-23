@@ -44,6 +44,7 @@ static uint8 walk_state = 0;
 // initialize for walking - assume walk ready pose
 void walk_init()
 {
+	printf("walk_init\n");
 	int commStatus = 0;
 
 	// reset walk state and command

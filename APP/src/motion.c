@@ -114,52 +114,52 @@ void motionPageInit()
 	// Commented code below is deprecated and could be removed
 
 
-	//printf("Loading motion pages at adress %x\n", &MotionPage1);
+#if use_old_motions_code
 
 	// Motion Page pointer assignment to PROGMEM 
-//	motion_pointer[0] = 0;
-//	motion_pointer[1] = (void*) &MotionPage1;
-//	motion_pointer[2] = (void*) &MotionPage2;
-//	motion_pointer[3] = (void*) &MotionPage3;
-//	motion_pointer[4] = (void*) &MotionPage4;
-//	motion_pointer[5] = (void*) &MotionPage5;
-//	motion_pointer[6] = (void*) &MotionPage6;
-//	motion_pointer[7] = (void*) &MotionPage7;
-//	motion_pointer[8] = (void*) &MotionPage8;
-//	motion_pointer[9] = (void*) &MotionPage9;
-//	motion_pointer[10] = (void*) &MotionPage10;
-//	motion_pointer[11] = (void*) &MotionPage11;
-//	motion_pointer[12] = (void*) &MotionPage12;
-//	motion_pointer[13] = (void*) &MotionPage13;
-//	motion_pointer[14] = (void*) &MotionPage14;
-//	motion_pointer[15] = (void*) &MotionPage15;
-//	motion_pointer[16] = (void*) &MotionPage16;
-//	motion_pointer[17] = (void*) &MotionPage17;
-//	motion_pointer[18] = (void*) &MotionPage18;
-//	motion_pointer[19] = (void*) &MotionPage19;
-//	motion_pointer[20] = (void*) &MotionPage20;
-//	motion_pointer[21] = (void*) &MotionPage21;
-//	motion_pointer[22] = (void*) &MotionPage22;
-//	motion_pointer[23] = (void*) &MotionPage23;
-//	motion_pointer[24] = (void*) &MotionPage24;
-//	motion_pointer[25] = (void*) &MotionPage25;
-//	motion_pointer[26] = (void*) &MotionPage26;
-//	motion_pointer[27] = (void*) &MotionPage27;
-//	motion_pointer[28] = (void*) &MotionPage28;
-//	motion_pointer[29] = (void*) &MotionPage29;
-//	motion_pointer[30] = (void*) &MotionPage30;
-//	motion_pointer[31] = (void*) &MotionPage31;
-//	motion_pointer[32] = (void*) &MotionPage32;
-//	motion_pointer[33] = (void*) &MotionPage33;
-//	motion_pointer[34] = (void*) &MotionPage34;
-//	motion_pointer[35] = (void*) &MotionPage35;
-//	motion_pointer[36] = (void*) &MotionPage36;
-//	motion_pointer[37] = (void*) &MotionPage37;
-//	motion_pointer[38] = (void*) &MotionPage38;
-//	motion_pointer[39] = (void*) &MotionPage39;
-//	motion_pointer[40] = (void*) &MotionPage40;
-//	motion_pointer[41] = (void*) &MotionPage41;
-//	motion_pointer[42] = (void*) &MotionPage42;
+	motion_pointer[0] = 0;
+	motion_pointer[1] = (void*) &MotionPage1;
+	motion_pointer[2] = (void*) &MotionPage2;
+	motion_pointer[3] = (void*) &MotionPage3;
+	motion_pointer[4] = (void*) &MotionPage4;
+	motion_pointer[5] = (void*) &MotionPage5;
+	motion_pointer[6] = (void*) &MotionPage6;
+	motion_pointer[7] = (void*) &MotionPage7;
+	motion_pointer[8] = (void*) &MotionPage8;
+	motion_pointer[9] = (void*) &MotionPage9;
+	motion_pointer[10] = (void*) &MotionPage10;
+	motion_pointer[11] = (void*) &MotionPage11;
+	motion_pointer[12] = (void*) &MotionPage12;
+	motion_pointer[13] = (void*) &MotionPage13;
+	motion_pointer[14] = (void*) &MotionPage14;
+	motion_pointer[15] = (void*) &MotionPage15;
+	motion_pointer[16] = (void*) &MotionPage16;
+	motion_pointer[17] = (void*) &MotionPage17;
+	motion_pointer[18] = (void*) &MotionPage18;
+	motion_pointer[19] = (void*) &MotionPage19;
+	motion_pointer[20] = (void*) &MotionPage20;
+	motion_pointer[21] = (void*) &MotionPage21;
+	motion_pointer[22] = (void*) &MotionPage22;
+	motion_pointer[23] = (void*) &MotionPage23;
+	motion_pointer[24] = (void*) &MotionPage24;
+	motion_pointer[25] = (void*) &MotionPage25;
+	motion_pointer[26] = (void*) &MotionPage26;
+	motion_pointer[27] = (void*) &MotionPage27;
+	motion_pointer[28] = (void*) &MotionPage28;
+	motion_pointer[29] = (void*) &MotionPage29;
+	motion_pointer[30] = (void*) &MotionPage30;
+	motion_pointer[31] = (void*) &MotionPage31;
+	motion_pointer[32] = (void*) &MotionPage32;
+	motion_pointer[33] = (void*) &MotionPage33;
+	motion_pointer[34] = (void*) &MotionPage34;
+	motion_pointer[35] = (void*) &MotionPage35;
+	motion_pointer[36] = (void*) &MotionPage36;
+	motion_pointer[37] = (void*) &MotionPage37;
+	motion_pointer[38] = (void*) &MotionPage38;
+	motion_pointer[39] = (void*) &MotionPage39;
+	motion_pointer[40] = (void*) &MotionPage40;
+	motion_pointer[41] = (void*) &MotionPage41;
+	motion_pointer[42] = (void*) &MotionPage42;
 //	motion_pointer[43] = (void*) &MotionPage43;
 //	motion_pointer[44] = (void*) &MotionPage44;
 //	motion_pointer[45] = (void*) &MotionPage45;
@@ -345,6 +345,7 @@ void motionPageInit()
 //	motion_pointer[225] = (void*) &MotionPage225;
 //	motion_pointer[226] = (void*) &MotionPage226;
 //	motion_pointer[227] = (void*) &MotionPage227;
+#endif // use_old_motions_code
 }
 
 // This function executes robot motions consisting of one or more motion 
@@ -633,14 +634,16 @@ uint8 executeMotionSequence()
 
 // This function unpacks a motion page as stored by RoboPlus Motion
 // StartPage - number of the motion page to be unpacked
-void unpackMotion(int StartPage) {
+// DONT DO PRINTF IN THIS FUNCTION! IT WILL TAKE TOO LONG AND MAY BREAK WALKING OR OTHER MOTIONS.
+void unpackMotion2(int StartPage) {
 	int i;
 	const motion_page * motion = &motion_pointer_pages[StartPage-1];
-	printf("unpacking motion %i: %s\n", StartPage, motion->name);
+	//printf("Unpacking motion %i: %s\n", StartPage, motion->name);
 
 	CurrentMotion.RepeatTime = motion->repetitions;
 	CurrentMotion.Steps = motion->n_steps;
-	CurrentMotion.SpeedRate10 = 32 * 10 / motion->speed_rate; // not actually used just for comparision with old code
+	CurrentMotion.SpeedRate10 = 10 * 32 / motion->speed_rate; // not actually used just for comparision with old code
+	//printf("speedrate in mem is: %d, calculated speedrate10 is: %d\n", motion->speed_rate, CurrentMotion.SpeedRate10);
 	CurrentMotion.InertialForce = motion->ctrl_inertial_force;
 	CurrentMotion.NextPage = motion->next_page;
 	CurrentMotion.ExitPage = motion->exit_page;
@@ -674,136 +677,139 @@ void unpackMotion(int StartPage) {
 		CurrentMotion.PlayTime[step] = (CurrentMotion.PlayTime[step] * motion->speed_rate) / 32; //ms
 	}
 
-	printCurrentMotionPage();
+	// printCurrentMotionPage();
 }
 
+#if use_old_motions_code
 // This function unpacks a motion stored in program memory (Flash) 
 // in a struct stored in RAM to allow execution
 // StartPage - number of the motion page to be unpacked
-//void unpackMotion(int StartPage)
-//{
-//	uint8 i, s, num_packed_steps;
-//	uint32 packed_step_values;
-//
-//	// first we retrieve the Compliance Slope values
-//	for (i=0; i<NUM_AX12_SERVOS; i++)
-//	{
-//		CurrentMotion.JointFlex[i] = pgm_read_byte(motion_pointer[StartPage]+i);
-//	}
-//	// next we retrieve the play parameters (each are 1 byte)
-//	CurrentMotion.NextPage = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+0);
-//	CurrentMotion.ExitPage = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+1);
-//	CurrentMotion.RepeatTime = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+2);
-//	CurrentMotion.SpeedRate10 = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+3);
-//	CurrentMotion.InertialForce = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+4);
-//	CurrentMotion.Steps = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+5);
-//
-//	// now we are ready to unpack the Step Values
-//	// 3 values are packed into one 32bit integer - so use pgm_read_word twice
-//	num_packed_steps = NUM_AX12_SERVOS / 3;
-//	for (s=0; s<CurrentMotion.Steps; s++)
-//	{
-//		for (i=0; i<num_packed_steps; i++)
-//		{
-//			// higher 16bit
-//			packed_step_values = pgm_read_word(motion_pointer[StartPage]+NUM_AX12_SERVOS+6+(s*4*num_packed_steps)+4*i+2);
-//			packed_step_values = packed_step_values << 16;
-//			// lower 16bit
-//			packed_step_values += pgm_read_word(motion_pointer[StartPage]+NUM_AX12_SERVOS+6+(s*4*num_packed_steps)+4*i);
-//			// unpack and store
-//			CurrentMotion.StepValues[s][3*i+2] = packed_step_values & 0x3FF;
-//			packed_step_values = packed_step_values >> 11;
-//			CurrentMotion.StepValues[s][3*i+1] = packed_step_values & 0x3FF;
-//			packed_step_values = packed_step_values >> 11;
-//			CurrentMotion.StepValues[s][3*i] = packed_step_values & 0x3FF;
-//		}
-//		// Sanity Check - if the values are outside the overall Min/Max values we are probably accessing random memory
-//		for (i=0; i<NUM_AX12_SERVOS; i++)
-//		{
-//			if ( CurrentMotion.StepValues[s][i] > SERVO_MAX_VALUES[i] || CurrentMotion.StepValues[s][i] < SERVO_MIN_VALUES[i] )
-//			{
-//				// obviously have unpacked rubbish, stop right here
-//				printf("\nUnpack Motion Page %i, Step %i - rubbish data. STOP.", StartPage, s+1);
-//				printf("\nServo ID%i, Step Value = %i, Min = %i, Max = %i \n", AX12_IDS[i], CurrentMotion.StepValues[s][i], SERVO_MIN_VALUES[i],SERVO_MAX_VALUES[i] );
-//				exit(-1);
-//			}
-//		}
-//
-//	}
-//
-//	// and finally the play and pause times (in ms)
-//	// both need to be recalculated using the motion speed rate factor
-//	for (s=0; s<CurrentMotion.Steps; s++)
-//	{
-//		CurrentMotion.PauseTime[s] = pgm_read_word(motion_pointer[StartPage]+(NUM_AX12_SERVOS+6+CurrentMotion.Steps*4*num_packed_steps)+(s*2));
-//		if(CurrentMotion.PauseTime[s] != 0 && CurrentMotion.PauseTime[s] < 6500 ) {
-//			CurrentMotion.PauseTime[s] = (10*CurrentMotion.PauseTime[s]) / CurrentMotion.SpeedRate10;
-//		} else {
-//			CurrentMotion.PauseTime[s] = 10 * (CurrentMotion.PauseTime[s]/CurrentMotion.SpeedRate10);
-//		}
-//	}
-//	for (s=0; s<CurrentMotion.Steps; s++)
-//	{
-//		CurrentMotion.PlayTime[s] = pgm_read_word(motion_pointer[StartPage]+(NUM_AX12_SERVOS+6+CurrentMotion.Steps*4*num_packed_steps+CurrentMotion.Steps*2)+(s*2));
-//		if(CurrentMotion.PlayTime[s] != 0 && CurrentMotion.PlayTime[s] < 6500 ) {
-//			CurrentMotion.PlayTime[s] = (10*CurrentMotion.PlayTime[s]) / CurrentMotion.SpeedRate10;
-//		} else {
-//			CurrentMotion.PlayTime[s] = 10 * (CurrentMotion.PlayTime[s]/CurrentMotion.SpeedRate10);
-//		}
-//	}
-//
-//	// Analyse which joints are moving during each step (to save time later)
-//	if ( CurrentMotion.Steps > 1 )
-//	{
-//		// start with step 1 based on current pose values
-//		for (i=0; i<NUM_AX12_SERVOS; i++)
-//		{
-//			if( abs(CurrentMotion.StepValues[0][i] - current_pose[i]) <= 3  )
-//			motion_step_servos_moving[0][i] = 1;
-//		}
-//		// now analyse the remaining motion steps
-//		for (s=1; s<CurrentMotion.Steps; s++)
-//		{
-//			// compare with previous step
-//			for (i=0; i<NUM_AX12_SERVOS; i++)
-//			{
-//				// compare each servo value within +/-3 steps (equivalent to +/- 0.9deg)
-//				if( abs(CurrentMotion.StepValues[s][i] - CurrentMotion.StepValues[s-1][i]) <= 3 )
-//					motion_step_servos_moving[s][i] = 0;
-//				else
-//					motion_step_servos_moving[s][i] = 1;
-//			}
-//		}
-//
-//		// aggregate these to see which servos are moving at all
-//		for (i=0; i<NUM_AX12_SERVOS; i++)
-//		{
-//			// reset the value first
-//			motion_servos_moving[i] = 0;
-//
-//			// add up the step values from above
-//			for (s=1; s<CurrentMotion.Steps; s++)
-//			{
-//				motion_servos_moving[i] += motion_step_servos_moving[s][i];
-//			}
-//
-//			// normalise values to 1
-//			if ( motion_servos_moving[i] > 0 ) motion_servos_moving[i] = 1;
-//		}
-//	} else {
-//		// only 1 Motion Step in current page
-//		// can only be analysed base don current pose values
-//		for (i=0; i<NUM_AX12_SERVOS; i++)
-//		{
-//			if( abs(CurrentMotion.StepValues[0][i] - current_pose[i]) <= 3  )
-//			{
-//				// set both arrays
-//				motion_step_servos_moving[0][i] = 1;
-//				motion_servos_moving[i] = 1;
-//			}
-//		}
-//	}
-//}
+void unpackMotion(int StartPage)
+{
+	uint8 i, s, num_packed_steps;
+	uint32 packed_step_values;
+
+	// first we retrieve the Compliance Slope values
+	for (i=0; i<NUM_AX12_SERVOS; i++)
+	{
+		CurrentMotion.JointFlex[i] = pgm_read_byte(motion_pointer[StartPage]+i);
+	}
+	// next we retrieve the play parameters (each are 1 byte)
+	CurrentMotion.NextPage = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+0);
+	CurrentMotion.ExitPage = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+1);
+	CurrentMotion.RepeatTime = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+2);
+	CurrentMotion.SpeedRate10 = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+3);
+	CurrentMotion.InertialForce = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+4);
+	CurrentMotion.Steps = pgm_read_byte(motion_pointer[StartPage]+NUM_AX12_SERVOS+5);
+
+	// now we are ready to unpack the Step Values
+	// 3 values are packed into one 32bit integer - so use pgm_read_word twice
+	num_packed_steps = NUM_AX12_SERVOS / 3;
+	for (s=0; s<CurrentMotion.Steps; s++)
+	{
+		for (i=0; i<num_packed_steps; i++)
+		{
+			// higher 16bit
+			packed_step_values = pgm_read_word(motion_pointer[StartPage]+NUM_AX12_SERVOS+6+(s*4*num_packed_steps)+4*i+2);
+			packed_step_values = packed_step_values << 16;
+			// lower 16bit
+			packed_step_values += pgm_read_word(motion_pointer[StartPage]+NUM_AX12_SERVOS+6+(s*4*num_packed_steps)+4*i);
+			// unpack and store
+			CurrentMotion.StepValues[s][3*i+2] = packed_step_values & 0x3FF;
+			packed_step_values = packed_step_values >> 11;
+			CurrentMotion.StepValues[s][3*i+1] = packed_step_values & 0x3FF;
+			packed_step_values = packed_step_values >> 11;
+			CurrentMotion.StepValues[s][3*i] = packed_step_values & 0x3FF;
+		}
+		// Sanity Check - if the values are outside the overall Min/Max values we are probably accessing random memory
+		for (i=0; i<NUM_AX12_SERVOS; i++)
+		{
+			if ( CurrentMotion.StepValues[s][i] > SERVO_MAX_VALUES[i] || CurrentMotion.StepValues[s][i] < SERVO_MIN_VALUES[i] )
+			{
+				// obviously have unpacked rubbish, stop right here
+				printf("\nUnpack Motion Page %i, Step %i - rubbish data. STOP.", StartPage, s+1);
+				printf("\nServo ID%i, Step Value = %i, Min = %i, Max = %i \n", AX12_IDS[i], CurrentMotion.StepValues[s][i], SERVO_MIN_VALUES[i],SERVO_MAX_VALUES[i] );
+				exit(-1);
+			}
+		}
+
+	}
+
+	// and finally the play and pause times (in ms)
+	// both need to be recalculated using the motion speed rate factor
+	for (s=0; s<CurrentMotion.Steps; s++)
+	{
+		CurrentMotion.PauseTime[s] = pgm_read_word(motion_pointer[StartPage]+(NUM_AX12_SERVOS+6+CurrentMotion.Steps*4*num_packed_steps)+(s*2));
+		if(CurrentMotion.PauseTime[s] != 0 && CurrentMotion.PauseTime[s] < 6500 ) {
+			CurrentMotion.PauseTime[s] = (10*CurrentMotion.PauseTime[s]) / CurrentMotion.SpeedRate10;
+		} else {
+			CurrentMotion.PauseTime[s] = 10 * (CurrentMotion.PauseTime[s]/CurrentMotion.SpeedRate10);
+		}
+	}
+	for (s=0; s<CurrentMotion.Steps; s++)
+	{
+		CurrentMotion.PlayTime[s] = pgm_read_word(motion_pointer[StartPage]+(NUM_AX12_SERVOS+6+CurrentMotion.Steps*4*num_packed_steps+CurrentMotion.Steps*2)+(s*2));
+		if(CurrentMotion.PlayTime[s] != 0 && CurrentMotion.PlayTime[s] < 6500 ) {
+			CurrentMotion.PlayTime[s] = (10*CurrentMotion.PlayTime[s]) / CurrentMotion.SpeedRate10;
+		} else {
+			CurrentMotion.PlayTime[s] = 10 * (CurrentMotion.PlayTime[s]/CurrentMotion.SpeedRate10);
+		}
+	}
+
+	// Analyse which joints are moving during each step (to save time later)
+	if ( CurrentMotion.Steps > 1 )
+	{
+		// start with step 1 based on current pose values
+		for (i=0; i<NUM_AX12_SERVOS; i++)
+		{
+			if( abs(CurrentMotion.StepValues[0][i] - current_pose[i]) <= 3  )
+			motion_step_servos_moving[0][i] = 1;
+		}
+		// now analyse the remaining motion steps
+		for (s=1; s<CurrentMotion.Steps; s++)
+		{
+			// compare with previous step
+			for (i=0; i<NUM_AX12_SERVOS; i++)
+			{
+				// compare each servo value within +/-3 steps (equivalent to +/- 0.9deg)
+				if( abs(CurrentMotion.StepValues[s][i] - CurrentMotion.StepValues[s-1][i]) <= 3 )
+					motion_step_servos_moving[s][i] = 0;
+				else
+					motion_step_servos_moving[s][i] = 1;
+			}
+		}
+
+		// aggregate these to see which servos are moving at all
+		for (i=0; i<NUM_AX12_SERVOS; i++)
+		{
+			// reset the value first
+			motion_servos_moving[i] = 0;
+
+			// add up the step values from above
+			for (s=1; s<CurrentMotion.Steps; s++)
+			{
+				motion_servos_moving[i] += motion_step_servos_moving[s][i];
+			}
+
+			// normalise values to 1
+			if ( motion_servos_moving[i] > 0 ) motion_servos_moving[i] = 1;
+		}
+	} else {
+		// only 1 Motion Step in current page
+		// can only be analysed base don current pose values
+		for (i=0; i<NUM_AX12_SERVOS; i++)
+		{
+			if( abs(CurrentMotion.StepValues[0][i] - current_pose[i]) <= 3  )
+			{
+				// set both arrays
+				motion_step_servos_moving[0][i] = 1;
+				motion_servos_moving[i] = 1;
+			}
+		}
+	}
+}
+
+#endif //use_old_motions_code
 
 // This function initiates the execution of a motion step in the given motion page
 // Step - number of the step to be initiated

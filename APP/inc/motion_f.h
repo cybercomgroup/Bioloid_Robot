@@ -41,14 +41,27 @@
 #define MOTION_STAND		26
 #define MOTION_GRAB			240
 
+
+// set use_old_motions_code to one to use the old motion code and the motion definitions in this header.
+#define use_old_motions_code 0
+
+// use the new and improved motion unpacker.
+// if use_old_motions_code you can still use the new unpacker code by calling unpackMotion2
+#if !use_old_motions_code
+#define unpackMotion(x) unpackMotion2(x)
+#endif
+
 // Initialize the motion pages by constructing a table of pointers to each page
 // Motion pages are stored in Flash (PROGMEM) - see motion.h
 void motionPageInit();
 
+#if use_old_motions_code
 // This function unpacks a motion stored in program memory (Flash) 
 // in a struct stored in RAM to allow execution
 // StartPage - number of the motion page to be unpacked
 void unpackMotion(int StartPage);
+
+#endif //use_old_motions_code
 
 // This function unpacks a motion page as stored by RoboPlus Motion.
 // StartPage - number of the motion page to be unpacked
