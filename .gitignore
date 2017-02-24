@@ -5,6 +5,5 @@
 *.elf.map
 *.hex
 *.lss
-*.s
 *.a
 
