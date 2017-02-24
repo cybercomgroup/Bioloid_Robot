@@ -75,6 +75,8 @@ void resetJointOffsets(void);
 
 void setJointOffsetById(u8 id, int16 offset);
 
-uint16 * getCurrentGoalPose();
+u16 * getCurrentGoalPose();
+
+void applyOffsets(u16 time);
 
 #endif /* POSE_H_ */

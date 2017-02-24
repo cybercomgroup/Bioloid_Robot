@@ -56,7 +56,7 @@ uint32 last_interpret_input_millis = -1; // dummy value to check at first iterat
 
 void _serial_putc(void*, char); // put a char in serial console
 
-int lean_left_right(u16 speed, u16 amount);
+void lean_left_right(u16 speed, s16 amount);
 #define lean_left(speed, amount) lean_left_right(speed, amount)
 #define lean_right(speed, amount) lean_left_right(speed, -amount)
 
@@ -237,6 +237,7 @@ void dxl_test2();
 void testTimeFns();
 void balance_left_right();
 void test_load_motions();
+void test_subGoalPosePrediction();
 
 int main(void)
 {
@@ -283,14 +284,14 @@ int main(void)
 	printf("Init rc100...\n");
 	rc100_init();
 
+	printf("Assuming the initial pose...\n");
+
 	// stand up on start to work around first jerky motion by rc100 (unknown why??)
 	//startMotionIfIdle(MOTION_STAND);
 	executeMotion(MOTION_STAND);
 
 	printf("Calbirating gyro...\n");
 	gyro_init();
-	printf("Calbirating gyro done!\n");
-
 
 	//printf("Press start!!.\r\n");
 
@@ -305,8 +306,10 @@ int main(void)
 	//startMotionIfIdle(32);
 	//bioloid_command = COMMAND_WALK_FORWARD;
 
+	test_subGoalPosePrediction();
+
 	printf("Starting main loop.\n");
-	mainLoop();
+	//mainLoop();
 	//test_load_motions();
 
 	printf("\nProgram finished. Have a nice day!\n");
@@ -315,8 +318,8 @@ int main(void)
 
 
 void mainLoop() {
-	int ir_left, ir_right;
-	while(1) {
+	int ir_left, ir_right, it;
+	for(it=0;;it++) {
 		/* Interpret command from controller.
 		 * This function automatically sets the next command if applicable. */
 		controller_read_input();
@@ -348,6 +351,9 @@ void mainLoop() {
 
 		executeMotionSequence(); // update the current motion state (use startMotionIfIdle to start a new motion)
 		walk_shift();
+
+		if (it % 1000 == 0)
+			printf("Motion finished? %d\n", isGoalPoseReached());
 	}
 }
 
@@ -380,7 +386,7 @@ void balance_left_right() {
 // Read current pose and command the servos to go to the current pose + offset to hips and ankles
 // non blocking.
 // return: 0 on successful execution
-int lean_left_right(u16 time, u16 amount) {
+void lean_left_right(u16 time, s16 amount) {
 	//u16 current_pose[NUM_AX12_SERVOS];
 	// read current pose
 	//for (int i = 0; i < NUM_AX12_SERVOS; i++) {
@@ -393,7 +399,7 @@ int lean_left_right(u16 time, u16 amount) {
 	setJointOffsetById(10, amount);
 	setJointOffsetById(17, amount);
 	setJointOffsetById(18, amount);
-	return moveToGoalPose(time, getCurrentGoalPose(), 0);
+	applyOffsets(time);
 }
 
 
@@ -512,6 +518,18 @@ void testTimeFns() {
 
 void testAbsFn() {
 	printf("Testing abs on 1 and -1: %d, %d \n", abs(1), abs(-1));
+}
+
+void test_subGoalPosePrediction() {
+	printf("test_subGoalPosePrediction START \n");
+	unpackMotion2(25);
+	executeMotionStep(1);
+	uint16 ret_pose[NUM_AX12_SERVOS];
+	poseAtTime(ret_pose, 1000);
+	for (int i = 0; i < NUM_AX12_SERVOS; i++) {
+		printf("%d: %d\n", i, ret_pose[i]);
+	}
+	printf("test_subGoalPosePrediction DONE \n");
 }
 
 /* Put a character to the serial terminal.
