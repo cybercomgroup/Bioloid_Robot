@@ -830,7 +830,8 @@ unsigned long executeMotionStep(int Step)
 		// take the time
 		step_start_time = millis();
 		// execute the pose without waiting for completion
-		moveToGoalPose(CurrentMotion.PlayTime[Step-1], goalPose, DONT_WAIT_FOR_POSE_FINISH);
+		setGoal(CurrentMotion.PlayTime[Step-1], goalPose);
+		moveToGoalPose(DONT_WAIT_FOR_POSE_FINISH);
 		// return the start time to keep track of step timing
 		return step_start_time;
 	} else {
@@ -967,8 +968,9 @@ int executeMotion(int StartPage)
 				{ goalPose[j] = CurrentMotion.StepValues[s][j]; }
 			// take the time
 			pre_step_time = millis();
-			// execute each pose 
-			moveToGoalPose(CurrentMotion.PlayTime[s], goalPose, WAIT_FOR_POSE_FINISH);
+			// execute each pose
+			setGoal(CurrentMotion.PlayTime[s], goalPose);
+			moveToGoalPose(WAIT_FOR_POSE_FINISH);
 			// store the time
 			step_times[s] = millis() - pre_step_time;
 			

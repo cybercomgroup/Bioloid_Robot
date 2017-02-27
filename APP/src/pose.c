@@ -43,18 +43,24 @@ struct pose_state_struct {
 	uint16 goal_pose_adjusted[NUM_AX12_SERVOS]; // adjusted by offsets and bounds
 	uint16 goal_speed[NUM_AX12_SERVOS];
 
+	u32 poseStartedMillis;
+
 	uint16 sub_goal_poses[SUB_GOALS_STACK_SIZE][NUM_AX12_SERVOS];
 	uint16 sub_goal_times[SUB_GOALS_STACK_SIZE];
-	int nSubGoals;
+	int current_sub_goal_index;
+	unsigned int offset_adjustments_steps;
 
 	// robot's current "actual" positions and speeds etc.
 	int16 current_pose[NUM_AX12_SERVOS];
-	int16 joint_offset[NUM_AX12_SERVOS];
+	int16 new_joint_offset[NUM_AX12_SERVOS];
+	int16 applied_joint_offset[NUM_AX12_SERVOS];
 } state;
 
 
-
-
+void init_pose() {
+	state.current_sub_goal_index = -1;
+	state.offset_adjustments_steps = 0;
+}
 
 // read in current servo positions to determine current pose
 // takes between 260us and 456us per servo (mainly 260us or 300us)
@@ -68,18 +74,37 @@ void readCurrentPose()
 	}
 }
 
+bool checkServosMoving()
+{
+	uint8 moving_flag;
+
+	// reset the flag
+	moving_flag = 0;
+
+	for (int i=0; i<NUM_AX12_SERVOS; i++) {
+		// keep reading the moving state of servos
+		moving_flag += dxl_read_byte( AX12_IDS[i], DXL_MOVING );
+		// if anything still moving - return
+		if ( moving_flag == 1) {
+			return moving_flag;
+		}
+	}
+	return 0;
+}
+
 // Poll servos to check if goal position is reached (close enough to) goal pose
 bool isGoalPoseReached()
 {
-	const int eps = 5; // TODO decide value
-	for (int i=0; i<NUM_AX12_SERVOS; i++) {
-		u16 currentPosition = dxl_read_word( AX12_IDS[i], DXL_PRESENT_POSITION_L );
-		u16 goalPositon = getCurrentGoalPose()[i] + state.joint_offset[i];
-		if (goalPositon - currentPosition > eps) {
-			return 0; // servo i not yet reached its goal position.
-		}
-	}
-	return 1;
+	return !checkServosMoving();
+//	const int eps = 5; // TODO decide value
+//	for (int i=0; i<NUM_AX12_SERVOS; i++) {
+//		u16 currentPosition = dxl_read_word( AX12_IDS[i], DXL_PRESENT_POSITION_L );
+//		u16 goalPositon = getCurrentGoalPose()[i] + state.joint_offset[i];
+//		if (goalPositon - currentPosition > eps) {
+//			return 0; // servo i not yet reached its goal position.
+//		}
+//	}
+//	return 1;
 }
 
 // Function to wait for servos to reach (close enough to) goal pose
@@ -178,7 +203,7 @@ void applyOffsetsBounds(uint16 goal_pose_adjusted[NUM_AX12_SERVOS]) {
 	for (i=0; i<NUM_AX12_SERVOS; i++)
 	{
 		// process the joint offset values bearing in mind the different variable types
-		temp_goal = (int16) getCurrentGoalPose()[i] + state.joint_offset[i];
+		temp_goal = (int16) getCurrentGoalPose()[i] + state.applied_joint_offset[i];
 		if ( temp_goal < 0 ) {
 			goal_pose_adjusted[i] = 0;		// can't go below 0
 		}
@@ -188,6 +213,19 @@ void applyOffsetsBounds(uint16 goal_pose_adjusted[NUM_AX12_SERVOS]) {
 		else {
 			goal_pose_adjusted[i] = (uint16) temp_goal;
 		}
+	}
+}
+
+void setGoal(uint16 time, const uint16 goal[])
+{
+	//printf("Setting new goal pose! resetting stack etc.\n");
+	state.current_sub_goal_index = 0;
+	state.offset_adjustments_steps = 0;
+	state.poseStartedMillis = 0xFFFFFFFF; // max unsigned int32
+	for (int i=0; i<NUM_AX12_SERVOS; i++)
+	{
+		state.sub_goal_poses[0][i] = goal[i];
+		state.sub_goal_times[0] = time;
 	}
 }
 
@@ -201,19 +239,22 @@ void applyOffsetsBounds(uint16 goal_pose_adjusted[NUM_AX12_SERVOS]) {
 // Returns	(int)	  -1  - communication error
 //					   0  - all ok
 //					   1  - alarm
-int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
+int moveToGoalPose(uint8 wait_flag)
 {
     int i;
 	int commStatus, errorStatus;
 
 	//printf("setting goal pose\n");
 
+	if (state.current_sub_goal_index <= -1) {
+		printf("Called moveToGoalPose without a goal pose!\n");
+		return -1;
+	}
 
 	uint16 *goal_pose = getCurrentGoalPose();
 
 	for (i=0; i<NUM_AX12_SERVOS; i++) {
-		goal_pose[i] = goal[i];
-		state.goal_pose_adjusted[i] = goal[i];
+		state.goal_pose_adjusted[i] = goal_pose[i];
 	}
 
 
@@ -222,7 +263,7 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 	//printf("calculate speeds\n");
 
 	// do the setup and calculate speeds
-	calculatePoseServoSpeeds(time, state.goal_pose_adjusted, state.goal_speed);
+	calculatePoseServoSpeeds(state.sub_goal_times[state.current_sub_goal_index], state.goal_pose_adjusted, state.goal_speed);
 
 	//printf("setting goal pose done\n");
 
@@ -235,6 +276,8 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 		dxl_printCommStatus(commStatus);
 		return -1;
 	}
+
+	state.poseStartedMillis = millis();
 
 	//printf("set speeds sent\n");
 
@@ -269,13 +312,14 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 void moveToDefaultPose()
 {
 	// assume default pose defined 
-	moveToGoalPose(InitialPlayTime, InitialValues, WAIT_FOR_POSE_FINISH);
+	setGoal(InitialPlayTime, InitialValues);
+	moveToGoalPose(WAIT_FOR_POSE_FINISH);
 }
 
 void resetJointOffsets(void)
 {
 	for (int i = 0; i < NUM_AX12_SERVOS; i++) {
-		state.joint_offset[i] = 0;
+		state.new_joint_offset[i] = 0;
 	}
 }
 
@@ -284,28 +328,34 @@ void setJointOffsetById(u8 id, s16 offset)
 	if (id == 0 || id > NUM_AX12_SERVOS) {
 		printf("setJointOffsetById: invalid servo id, did you perhaps send the index?\n");
 	}
-	state.joint_offset[id-1] = offset;
+	state.new_joint_offset[id-1] = offset;
 }
 
 uint16 * getCurrentGoalPose()
 {
-	return state.sub_goal_poses[0];
+	if (state.current_sub_goal_index > -1)
+		return state.sub_goal_poses[state.current_sub_goal_index];
+	else
+		return 0;
 }
 
 void poseAtTime(uint16 * ret_pose, uint16 time)
 {
 	for (int i = 0; i < NUM_AX12_SERVOS; i++) {
-		ret_pose[i] = state.current_pose[i] + state.goal_speed[i] * time; // TODO using goal speeds here, may want to use actual speeds.
+		u16 travel = ((u32) state.goal_speed[i] * time) / 848; // TODO using goal speeds here, may want to use actual speeds.
+		ret_pose[i] = state.current_pose[i] + travel;
+		//ret_pose[i] = state.goal_pose_adjusted[i] + time * state.goal_speed[i] / 848;
 	}
 }
 
+// return:
 int popSubGoal()
 {
-	if (state.nSubGoals >= 0) {
-		state.nSubGoals--;
-		return 0;
+	if (state.current_sub_goal_index >= 0) {
+		state.current_sub_goal_index--;
+		return 1;
 	}
-	return -1;
+	return 0;
 }
 
 //int pushSubGoal(u16 subPose[NUM_AX12_SERVOS], uint16 time)
@@ -328,27 +378,91 @@ int popSubGoal()
 
 u16 * pushSubGoal()
 {
-	++state.nSubGoals;
-	if (state.nSubGoals < SUB_GOALS_STACK_SIZE) {
-		return state.sub_goal_poses[state.nSubGoals];
+	++state.current_sub_goal_index;
+	if (state.current_sub_goal_index < SUB_GOALS_STACK_SIZE) {
+		return state.sub_goal_poses[state.current_sub_goal_index];
 	} else {
 		// TODO handle stack overflow somehow
 		printf("Sub Goal pose stack overflow!\n");
-		state.nSubGoals--;
+		state.current_sub_goal_index--;
 		return 0;
 	}
 }
 
 void applyOffsets(uint16 time)
 {
-	u16 * subPose = pushSubGoal();
-	if (subPose != 0) {
-		// TODO more effective read current pose?
-		readCurrentPose();
-		poseAtTime(subPose, time);
-		state.sub_goal_times[state.nSubGoals] = time;
-		moveToGoalPose(time, subPose, 0);
+	if (state.offset_adjustments_steps > 0) {
+		return; // TODO replace current offsets instead of just saying no.
 	}
+
+	bool anyDiff = 0;
+	for (int i = 0; i < NUM_AX12_SERVOS; i++)
+	{
+		if (state.applied_joint_offset[i] != state.new_joint_offset[i])
+			anyDiff = 1;
+		state.applied_joint_offset[i] = state.new_joint_offset[i];
+	}
+	if (!anyDiff)
+	{
+		//printf("not applying new offsets as they are the same as old offsets.\n");
+		return;
+	}
+
+	u16 * subPose = pushSubGoal();
+	if (subPose == 0) {
+		printf("ERROR: Attempted to apply offsets but sub goal stack is full!\n");
+		return;
+	}
+
+	state.offset_adjustments_steps++;
+	//printf("Applying new offsets.\n");
+
+	// TODO more effective read current pose?
+	readCurrentPose();
+	if (state.current_sub_goal_index > 0) { // NOTE its > 0 because we already pushed to the stack, thus incrementing stack pointer...
+		//printf("applying offsets to current motion (stack index is %d)\n", state.current_sub_goal_index);
+		poseAtTime(state.sub_goal_poses[state.current_sub_goal_index], time);
+//		printf("the predicted pose is: \n");
+//		for (int i = 0; i < NUM_AX12_SERVOS; i++)
+//		{
+//			printf("  %i: %d \n", i, state.sub_goal_poses[state.current_sub_goal_index][i]);
+//		}
+	} else {
+		// We're not currenly in a movement,
+		// take the last goal pose (which is at index 0 in the stack) and set that as the sub pose,
+		// so we can execute it with the offsets added.
+		//printf("applying offsets to current pose.\n");
+		for (int i = 0; i < NUM_AX12_SERVOS; i++)
+		{
+			subPose[i] = state.sub_goal_poses[0][i];
+		}
+	}
+	state.sub_goal_times[state.current_sub_goal_index] = time;
+	moveToGoalPose(0);
+}
+
+// check if a subgoal is reached. if so, pop and execute the next subgoal.
+// Return: 0 if current subgoal not yet reached, 1 otherwise.
+int pollNextSubGoal() {
+	if (state.current_sub_goal_index >= 0) {
+		if (millis() - state.poseStartedMillis >= state.sub_goal_times[state.current_sub_goal_index])
+		{
+			popSubGoal();
+			printf("Popped goal stack! index is now %d\n", state.current_sub_goal_index);
+
+			 // this is to keep track of the number of offset adjustment steps left.
+			if (state.offset_adjustments_steps > 0)
+				state.offset_adjustments_steps--;
+
+			if (state.current_sub_goal_index > -1)
+			{
+				//printf("moving to next sub goal\n");
+				moveToGoalPose(0);
+			}
+			return 1;
+		}
+	}
+	return 0;
 }
 
 

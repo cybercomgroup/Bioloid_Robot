@@ -56,6 +56,10 @@ void waitForPoseFinish();
 // Instead we assume that Moving Speed 0x3FF = 59rpm
 void calculatePoseServoSpeeds(uint16 time, uint16 goal_pose[NUM_AX12_SERVOS], uint16 goal_speed[NUM_AX12_SERVOS]);
 
+
+// Reset the stack and set the goal pose.
+void setGoal(uint16 time, const uint16 goal[]);
+
 // Moves from the current pose to the goal pose
 // using calculated servo speeds and delay between steps
 // to achieve the required step timing (actual play time)
@@ -66,7 +70,7 @@ void calculatePoseServoSpeeds(uint16 time, uint16 goal_pose[NUM_AX12_SERVOS], ui
 // Returns	(int)	  -1  - communication error
 //					   0  - all ok
 //					   1  - alarm
-int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag);
+int moveToGoalPose(uint8 wait_flag);
 
 // Assume default pose (Balance - MotionPage 224)
 void moveToDefaultPose(void);
@@ -78,5 +82,10 @@ void setJointOffsetById(u8 id, int16 offset);
 u16 * getCurrentGoalPose();
 
 void applyOffsets(u16 time);
+
+// init the pose module.
+void init_pose();
+
+int pollNextSubGoal();
 
 #endif /* POSE_H_ */

@@ -70,13 +70,13 @@ uint16 speeds[NUM_AX12_SERVOS];
 // Set the new current motion if the robot is not currently executing a motion
 // Return: 1 if a new motion was set, 0 if a motion already was active.
 int startMotionIfIdle(int motionPageId) {
-//	printf("startMotionIfIdle %d ?" , motionPageId);
+	printf("startMotionIfIdle %d? " , motionPageId);
 	if (checkMotionFinished()) {
-//		printf("idle!\n");
+		printf("idle!\n");
 		setNewMotionCommand(motionPageId);
 		return 1;
 	}
-//	printf("not idle!\n");
+	printf("not idle!\n");
 	return 0;
 }
 
@@ -120,8 +120,8 @@ void interpret_input(int input) {
 		startMotionIfIdle(MOTION_STAND);
 
 	} else if (input & RC100_BTN_2) {
-		printf("Kicking.\n");
-		startMotionIfIdle(MOTION_STAND);
+		printf("lifting arm...\n");
+		startMotionIfIdle(241);
 
 	} else if (input & RC100_BTN_3) {
 		printf("Sitting down.\n");
@@ -150,7 +150,7 @@ void interpret_input(int input) {
 		cmd_lean_amount = 0;
 	}
 
-	lean_left_right(500, cmd_lean_amount);
+	lean_left_right(1000, cmd_lean_amount);
 }
 
 /*
@@ -284,6 +284,8 @@ int main(void)
 	printf("Init rc100...\n");
 	rc100_init();
 
+	init_pose();
+
 	printf("Assuming the initial pose...\n");
 
 	// stand up on start to work around first jerky motion by rc100 (unknown why??)
@@ -306,10 +308,10 @@ int main(void)
 	//startMotionIfIdle(32);
 	//bioloid_command = COMMAND_WALK_FORWARD;
 
-	test_subGoalPosePrediction();
+	//test_subGoalPosePrediction();
 
 	printf("Starting main loop.\n");
-	//mainLoop();
+	mainLoop();
 	//test_load_motions();
 
 	printf("\nProgram finished. Have a nice day!\n");
@@ -349,11 +351,10 @@ void mainLoop() {
 
 		evaluate_current_command();
 
+		pollNextSubGoal();
+
 		executeMotionSequence(); // update the current motion state (use startMotionIfIdle to start a new motion)
 		walk_shift();
-
-		if (it % 1000 == 0)
-			printf("Motion finished? %d\n", isGoalPoseReached());
 	}
 }
 
@@ -399,6 +400,7 @@ void lean_left_right(u16 time, s16 amount) {
 	setJointOffsetById(10, amount);
 	setJointOffsetById(17, amount);
 	setJointOffsetById(18, amount);
+	//printf("applyig offset: %d\n", amount);
 	applyOffsets(time);
 }
 
