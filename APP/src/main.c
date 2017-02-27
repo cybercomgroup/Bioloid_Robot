@@ -26,13 +26,6 @@ typedef enum {
 	CMD_WAVE 			= 7
 } command;
 
-typedef enum {
-	START_DOWN = 1,
-	LEFT_DOWN = 1 << 1,
-	RIGHT_DOWN = 1 << 2,
-
-
-} button_state;
 /* --- */
 
 #define LEAN_SPEED_FACTOR
@@ -157,6 +150,15 @@ void interpret_input(int input) {
  * Reads input from the remote. Returns 1 if successful, otherwise 0.
  */
 int controller_read_input(void) {
+
+	/*
+	 * With the new controller system, this function can be replaced with the following:
+	 * if (rc100_read_state(RC100_BTN_1) == STATE_PRESSED) {
+	 * 		Do stuff!
+	 * }
+	 *
+	 * HOWEVER!! It is crucial that rc100_update() is run before any button states are read, otherwise you will get old or useless values.
+	 * It is also important that rc100_check() is not run outside of the rc100 file since this might 'steal' data from rc100_update(). */
 
 	if (rc100_check()) {
 		// NOTE: IF I RUN A MOTION HERE THE FIRST TIME THE MOTION START OUTS JERKY, DONT KNOW WHY!?
