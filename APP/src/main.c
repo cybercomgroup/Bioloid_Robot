@@ -128,29 +128,29 @@ void interpret_input(int input) {
 		startMotionIfIdle(MOTION_SIT);
 
 	} else if (input & RC100_BTN_4) {
-		printf("Rapping chest.\n");
-		startMotionIfIdle(MOTION_RAP_CHEST);
-
+		//printf("Rapping chest.\n");
+		//startMotionIfIdle(MOTION_RAP_CHEST);
+		lean_left_right(1000, 0);
 	}
 
 
 
-	if ((input & RC100_BTN_5) &&  (input & RC100_BTN_6)) {
-		cmd_lean_amount = 0;
-	} else if (input & RC100_BTN_5) {
-		//printf("Attaking Right. \n");
-		//startMotionIfIdle(MOTION_ATTACK_R);
-		//lean_left(500, 30);
-		cmd_lean_amount = 30;
-	} else if (input & RC100_BTN_6) {
-		//printf("Attaking Left. \n");
-		//startMotionIfIdle(MOTION_ATTACK_L);
-		cmd_lean_amount = -30;
-	} else {
-		cmd_lean_amount = 0;
-	}
-
-	lean_left_right(1000, cmd_lean_amount);
+//	if ((input & RC100_BTN_5) &&  (input & RC100_BTN_6)) {
+//		cmd_lean_amount = 0;
+//	} else if (input & RC100_BTN_5) {
+//		//printf("Attaking Right. \n");
+//		//startMotionIfIdle(MOTION_ATTACK_R);
+//		//lean_left(500, 30);
+//		cmd_lean_amount = 30;
+//	} else if (input & RC100_BTN_6) {
+//		//printf("Attaking Left. \n");
+//		//startMotionIfIdle(MOTION_ATTACK_L);
+//		cmd_lean_amount = -30;
+//	} else {
+//		cmd_lean_amount = 0;
+//	}
+//
+//	lean_left_right(500, cmd_lean_amount);
 }
 
 /*
@@ -310,7 +310,7 @@ int main(void)
 
 	//test_subGoalPosePrediction();
 
-	printf("Starting main loop.\n");
+	//printf("Starting main loop.\n");
 	mainLoop();
 	//test_load_motions();
 

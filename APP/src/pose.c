@@ -116,7 +116,7 @@ bool isGoalPoseReached()
 void waitForPoseFinish()
 {
 	while (!isGoalPoseReached()) {
-		asm("nop");
+		__asm("nop");
 	}
 }
 // Function to wait out any existing servo movement
@@ -197,7 +197,7 @@ void calculatePoseServoSpeeds(uint16 time, uint16 goal_pose[NUM_AX12_SERVOS], ui
 		if (goal_speed[i] < 26) goal_speed[i] = 26;
 		
 		// TEST:
-		//printf(" %u, %u, %u, %u", current_pose[i], goal_pose[i], travel[i], goal_speed[i]);
+		//printf(" %u, %u, %u, %u", state.current_pose[i], goal_pose[i], travel, goal_speed[i]);
 	}
 	
 }
@@ -260,17 +260,21 @@ int moveToGoalPose(uint8 wait_flag)
 
 	for (i=0; i<NUM_AX12_SERVOS; i++) {
 		state.goal_pose_adjusted[i] = goal_pose[i];
+
+		state.goal_start_pose[i] = state.current_pose[i];
 	}
 
 
 	applyOffsetsAndBounds(state.goal_pose_adjusted);
 
-	//printf("calculate speeds\n");
+	//printf("calculate speeds: goal_time %d, stack index= %d\n", state.sub_goal_times[state.current_sub_goal_index], state.current_sub_goal_index);
 
 	// do the setup and calculate speeds
 	calculatePoseServoSpeeds(state.sub_goal_times[state.current_sub_goal_index], state.goal_pose_adjusted, state.goal_speed);
 
 	//printf("setting goal pose done\n");
+
+	state.poseStartedMillis = millis();
 
 	// write out the goal positions via sync write
 	commStatus = dxl_set_goal_speed(NUM_AX12_SERVOS, AX12_IDS, state.goal_pose_adjusted, state.goal_speed);
@@ -281,8 +285,6 @@ int moveToGoalPose(uint8 wait_flag)
 		dxl_printCommStatus(commStatus);
 		return -1;
 	}
-
-	state.poseStartedMillis = millis();
 
 	//printf("set speeds sent\n");
 
@@ -345,7 +347,7 @@ uint16 * getCurrentGoalPose()
 }
 
 /* Calculate which pose we will be in in `time` ms. */
-void poseAtTime(uint16 * ret_pose, uint16 time)
+void poseAtTime(uint16 * ret_pose, uint16 time, uint16 total_goal_time)
 {
 	/* Option 1: ret_pose = current_pose + (goal_pose - current_pose) * time / time_left */
 //	int time_left = state.sub_goal_times[state.current_sub_goal_index] - (millis() - state.poseStartedMillis);
@@ -358,9 +360,9 @@ void poseAtTime(uint16 * ret_pose, uint16 time)
 //	}
 
 	/* Option 2: ret_pose = current_pose + (end_pose-start_pose) * time/total_goal_time  */
+	//const s32 total_goal_time = state.sub_goal_times[state.current_sub_goal_index];
 	for (int i = 0; i < NUM_AX12_SERVOS; i++) {
-		const s32 total_goal_time = state.sub_goal_times[state.current_sub_goal_index];
-		s16 travel = (state.goal_pose_adjusted[i] - state.current_pose[i]) * (s32)time / total_goal_time;
+		s16 travel = ((state.goal_pose_adjusted[i] - state.goal_start_pose[i]) * (s32)time) / total_goal_time;
 		ret_pose[i] = state.current_pose[i] + travel;
 	}
 }
@@ -419,10 +421,12 @@ void applyOffsets(uint16 time)
 			anyDiff = 1;
 		state.applied_joint_offset[i] = state.new_joint_offset[i];
 	}
-	if (!anyDiff) {
+
+	// TODO uncomment!
+	//if (!anyDiff) {
 		//printf("not applying new offsets as they are the same as old offsets.\n");
-		return;
-	}
+	//	return;
+	//}
 
 	u16 * new_sub_pose = pushSubGoal();
 	if (new_sub_pose == 0) {
@@ -437,12 +441,13 @@ void applyOffsets(uint16 time)
 	readCurrentPose();
 	if (state.current_sub_goal_index > 0) { // NOTE its > 0 because we already pushed to the stack, thus incrementing stack pointer...
 		//printf("applying offsets to current motion (stack index is %d)\n", state.current_sub_goal_index);
-		poseAtTime(new_sub_pose, time);
-//		printf("the predicted pose is: \n");
-//		for (int i = 0; i < NUM_AX12_SERVOS; i++)
-//		{
-//			printf("  %i: %d \n", i, state.sub_goal_poses[state.current_sub_goal_index][i]);
-//		}
+		poseAtTime(new_sub_pose, time, state.sub_goal_times[state.current_sub_goal_index-1]);
+		//printf("the predicted pose at stack index %d is: \n", state.current_sub_goal_index);
+		//for (int i = 0; i < NUM_AX12_SERVOS; i++)
+		//{
+		//	printf("  %i: %d \n", i, state.sub_goal_poses[state.current_sub_goal_index][i]);
+		//}
+		state.sub_goal_times[state.current_sub_goal_index-1] = state.sub_goal_times[state.current_sub_goal_index-1] - (millis() - state.poseStartedMillis) - time;
 	} else {
 		// We're not currenly in a movement,
 		// take the last executed goal pose (which is at index 0 in the stack) and set that as the sub pose,
