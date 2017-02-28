@@ -25,7 +25,7 @@
 #include "global.h"
 #include "pose.h"
 #include "dynamixel.h"
-//#include "clock.h"
+#include "time.h"
 #include "walk.h"
 
 
@@ -35,7 +35,10 @@ const uint16 InitialPlayTime = 400; // 0.4s is fast enough
 
 // we keep shared variables for goal pose and speed
 uint16 goal_pose[NUM_AX12_SERVOS];
+uint16 goal_speed[NUM_AX12_SERVOS];
+uint16 goal_pose_adjusted[NUM_AX12_SERVOS]; // adjusted by offsets and bounds
 
+u32 joint_offset_eta_ms[NUM_AX12_SERVOS];
 
 // read in current servo positions to determine current pose
 // takes between 260us and 456us per servo (mainly 260us or 300us)
@@ -90,7 +93,7 @@ void calculatePoseServoSpeeds(uint16 time, uint16 goal_pose[NUM_AX12_SERVOS], ui
 
 	// read the current pose only if we are not walking (no time)
 	if( walk_getWalkState() == 0 ) {
-		readCurrentPose();		// takes 6ms
+		//readCurrentPose();		// takes 6ms we do this in a global loop
 	}
 	
 	// TEST:
@@ -165,8 +168,8 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 {
     int i;
 	int commStatus, errorStatus;
-	uint16 goal_pose_adjusted[NUM_AX12_SERVOS]; // adjusted by offsets and bounds
-	uint16 goal_speed[NUM_AX12_SERVOS];
+
+
 	//printf("setting goal pose\n");
 
 
@@ -219,7 +222,7 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 		}
 		//printf("moveToGoalPose: all ok, read back current pose.\n");
 		// all ok, read back current pose
-		readCurrentPose();
+		//readCurrentPose();
 	}	
 	return 0;
 }
@@ -237,12 +240,56 @@ void resetJointOffsets(void) {
 	}
 }
 
-void setJointOffsetById(u8 id, int16 offset){
+void setJointOffsetById(u8 id, s16 offset)
+{
 	if (id == 0 || id > NUM_AX12_SERVOS) {
 		printf("setJointOffsetById: invalid servo id, did you perhaps send the index?\n");
 	}
 	joint_offset[id-1] = offset;
 }
+
+void applyJointOffsetById(u8 id, s16 delta)
+{
+	if (id == 0 || id > NUM_AX12_SERVOS) {
+		printf("setJointOffsetById: invalid servo id, did you perhaps send the index?\n");
+	}
+
+//	const s16 prevOffset = joint_offset[id-1];
+//	s16 new_position = current_pose[id-1] - prevOffset + new_offset;
+//
+//	if ( new_position < 0 ) {
+//		new_position = 0;		// can't go below 0
+//	} else if ( new_position > 1023 ) {
+//		new_position = 1023;	// or above 1023
+//	}
+
+	dxl_write_word(id, DXL_GOAL_POSITION_L, current_pose[id-1] + delta);
+	dxl_write_word(id, DXL_MOVING_SPEED_L, 1023);
+
+	// calculate when it should be done.
+	// now we can calculate the desired moving speed
+	// for 59pm the factor is 847.46 which we round to 848
+	// we need to use a temporary 32bit integer to prevent overflow
+	u32 est_time = (uint16) ( ((uint32) 848 * 1000 * abs(delta)) / 1023 );
+	joint_offset_eta_ms[id-1] = micros() + est_time;
+	printf("est_time %d\n", est_time);
+
+//	joint_offset[id-1] = new_offset;
+}
+
+void checkOffsets() {
+	//mDelay(est_time);
+
+	const u32 t = micros();
+	for (int i = 0; i < NUM_AX12_SERVOS; i++) {
+		if (joint_offset_eta_ms[i] != 0 && joint_offset_eta_ms[i] >= t) {
+			joint_offset_eta_ms[i] = 0; // indicate offset adjustment done.
+			dxl_write_word(i+1, DXL_GOAL_POSITION_L, goal_pose_adjusted[i]);
+			dxl_write_word(i+1, DXL_MOVING_SPEED_L, goal_speed[i]);
+		}
+	}
+}
+
 
 uint16 * getCurrentGoalPose(){
 	return goal_pose;

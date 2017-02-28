@@ -49,7 +49,7 @@ uint32 last_interpret_input_millis = -1; // dummy value to check at first iterat
 
 void _serial_putc(void*, char); // put a char in serial console
 
-int lean_left_right(u16 speed, u16 amount);
+int lean_left_right(u16 speed, s16 amount);
 #define lean_left(speed, amount) lean_left_right(speed, amount)
 #define lean_right(speed, amount) lean_left_right(speed, -amount)
 
@@ -131,14 +131,14 @@ void interpret_input(int input) {
 	if ((input & RC100_BTN_5) &&  (input & RC100_BTN_6)) {
 		cmd_lean_amount = 0;
 	} else if (input & RC100_BTN_5) {
-		//printf("Attaking Right. \n");
+		printf("Lean left. \n");
 		//startMotionIfIdle(MOTION_ATTACK_R);
 		//lean_left(500, 30);
-		cmd_lean_amount = 30;
+		cmd_lean_amount = 10;
 	} else if (input & RC100_BTN_6) {
-		//printf("Attaking Left. \n");
+		printf("lean right. \n");
 		//startMotionIfIdle(MOTION_ATTACK_L);
-		cmd_lean_amount = -30;
+		cmd_lean_amount = -10;
 	} else {
 		cmd_lean_amount = 0;
 	}
@@ -281,13 +281,15 @@ int main(void)
 		return 0;
 	}
 
+	// stand up on start to work around first jerky motion by rc100 (unknown why??)
+	//startMotionIfIdle(MOTION_STAND);
+	executeMotion(MOTION_STAND);
+
 	/* Initialize controller */
 	printf("Init rc100...\n");
 	rc100_init();
 
-	// stand up on start to work around first jerky motion by rc100 (unknown why??)
-	//startMotionIfIdle(MOTION_STAND);
-	executeMotion(MOTION_STAND);
+
 
 	printf("Calbirating gyro...\n");
 	gyro_init();
@@ -307,6 +309,9 @@ int main(void)
 	//startMotionIfIdle(32);
 	//bioloid_command = COMMAND_WALK_FORWARD;
 
+	//dxl_write_word(3, DXL_GOAL_POSITION_L, 663);
+	//dxl_write_word(3, DXL_MOVING_SPEED_L, 26);
+
 	printf("Starting main loop.\n");
 	mainLoop();
 	//test_load_motions();
@@ -319,6 +324,8 @@ int main(void)
 void mainLoop() {
 	int ir_left, ir_right;
 	while(1) {
+		readCurrentPose();
+
 		/* Interpret command from controller.
 		 * This function automatically sets the next command if applicable. */
 		controller_read_input();
@@ -350,6 +357,8 @@ void mainLoop() {
 
 		executeMotionSequence(); // update the current motion state (use startMotionIfIdle to start a new motion)
 		walk_shift();
+
+		checkOffsets();
 	}
 }
 
@@ -382,7 +391,7 @@ void balance_left_right() {
 // Read current pose and command the servos to go to the current pose + offset to hips and ankles
 // non blocking.
 // return: 0 on successful execution
-int lean_left_right(u16 time, u16 amount) {
+int lean_left_right(u16 time, s16 amount) {
 	//u16 current_pose[NUM_AX12_SERVOS];
 	// read current pose
 	//for (int i = 0; i < NUM_AX12_SERVOS; i++) {
@@ -391,11 +400,16 @@ int lean_left_right(u16 time, u16 amount) {
 
 	// apply offsets
 	//resetJointOffsets();
-	setJointOffsetById(9, amount);
-	setJointOffsetById(10, amount);
-	setJointOffsetById(17, amount);
-	setJointOffsetById(18, amount);
-	return moveToGoalPose(time, getCurrentGoalPose(), 0);
+//	setJointOffsetById(9, amount);
+//	setJointOffsetById(10, amount);
+//	setJointOffsetById(17, amount);
+//	setJointOffsetById(18, amount);
+//	return moveToGoalPose(time, getCurrentGoalPose(), 0);
+	applyJointOffsetById(9, amount);
+	applyJointOffsetById(10, amount);
+	applyJointOffsetById(17, amount);
+	applyJointOffsetById(18, amount);
+	return 0;
 }
 
 
