@@ -8,7 +8,6 @@
 #include "system_calls.h"
 #include "mem_attrs.h"
 #include "sensors.h"
-#include "string.h"
 #include "motion_f.h"
 
 //TODO: Move this stuff to a suitable header file:
@@ -27,8 +26,6 @@ typedef enum {
 } command;
 
 /* --- */
-
-#define LEAN_SPEED_FACTOR
 
 /* Global variables */
 
@@ -160,12 +157,67 @@ int controller_read_input(void) {
 	 * HOWEVER!! It is crucial that rc100_update() is run before any button states are read, otherwise you will get old or useless values.
 	 * It is also important that rc100_check() is not run outside of the rc100 file since this might 'steal' data from rc100_update(). */
 
-	if (rc100_check()) {
-		// NOTE: IF I RUN A MOTION HERE THE FIRST TIME THE MOTION START OUTS JERKY, DONT KNOW WHY!?
-		interpret_input(rc100_read_data());
+	rc100_update();
 
-		return 1;
+	if (rc100_get_btn_change_state(RC100_BTN_U) == STATE_PRESSED) {
+		// Start walking forward
+		printf("Walking forward.\n");
+		startMotionIfIdle(32);
+		bioloid_command = COMMAND_WALK_FORWARD;
 	}
+	else if (rc100_get_btn_change_state(RC100_BTN_U) == STATE_RELEASED) {
+		// Stop walking forward
+		printf("Walking forward stop.\n");
+		bioloid_command = COMMAND_STOP;
+		new_command = 1;
+	}
+
+	else if (rc100_get_btn_change_state(RC100_BTN_D) == STATE_PRESSED) {
+		// Start walking backward
+		printf("Walking backward.\n");
+		startMotionIfIdle(32);
+		bioloid_command = COMMAND_WALK_FORWARD;
+	}
+	else if (rc100_get_btn_change_state(RC100_BTN_D) == STATE_RELEASED) {
+		// Stop walking backward
+		printf("Walking backward stop.\n");
+		bioloid_command = COMMAND_STOP;
+		new_command = 1;
+	}
+
+	if (rc100_read_state_change(RC100_BTN_1) == STATE_PRESSED) {
+		printf("Standing up.\n");
+		startMotionIfIdle(MOTION_STAND);
+	}
+	else if (rc100_read_state_change(RC100_BTN_2) == STATE_PRESSED) {
+		printf("Grabbing and lifting.\n");
+		startMotionIfIdle(MOTION_GRAB);
+	}
+	else if (rc100_read_state_change(RC100_BTN_3) == STATE_PRESSED) {
+		printf("Sitting down.\n");
+		startMotionIfIdle(MOTION_SIT);
+	}
+	else if (rc100_read_state_change(RC100_BTN_4) == STATE_PRESSED) {
+		printf("Rapping chest.\n");
+		startMotionIfIdle(MOTION_RAP_CHEST);
+	}
+
+	if (rc100_read_state_change(RC100_BTN_5) == STATE_PRESSED) {
+		printf("Leaning left.\n");
+
+	}
+	else if (rc100_read_state_change(RC100_BTN_6) == STATE_PRESSED) {
+		printf("Leaning right.\n");
+		lean_right(0, 10);
+	}
+	if (rc100_get_btn_state(RC100_BTN_5)) {
+		lean_left(0, 10);
+	} else if (rc100_get_btn_state(RC100_BTN_6)) {
+		lean_right(0, 10);
+	} else {
+		lean_left(0, 0);
+	}
+
 	return 0;
 }
 
@@ -320,11 +372,10 @@ int main(void)
 	return 0;
 }
 
-
 void mainLoop() {
 	int ir_left, ir_right;
 	while(1) {
-		readCurrentPose();
+		update_servo_positions();
 
 		/* Interpret command from controller.
 		 * This function automatically sets the next command if applicable. */
@@ -356,9 +407,17 @@ void mainLoop() {
 		evaluate_current_command();
 
 		executeMotionSequence(); // update the current motion state (use startMotionIfIdle to start a new motion)
-		walk_shift();
 
 		checkOffsets();
+	}
+}
+
+// Update current servo positions.
+// To save time:
+// 		Check only servos that are expected to have moved.
+void update_servo_positions() {
+	for(int i=0; i<NUM_AX12_SERVOS; i++) {
+		current_pose[i] = dxl_read_word( i+1, DXL_PRESENT_POSITION_L );
 	}
 }
 

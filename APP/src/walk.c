@@ -42,6 +42,7 @@ static uint8 walk_command = 0;
 static uint8 walk_state = 0;
 
 // initialize for walking - assume walk ready pose
+// Note: it is called from motion.c's executeMotion() when a new walk command is issued (from previously not walking)
 void walk_init()
 {
 	printf("walk_init\n");
@@ -82,6 +83,7 @@ int walk_getWalkState()
 // Handles transitions between 1. WFWD - WFLS - WFRS and
 //                             2. WBWD - WBLS - WBRS
 // All other transitions between walk commands have to go via their exit page
+// Note: it is called from motion.c's executeMotion() when a new walk command is issued (from previously walking step finished)
 // Returns:	(int)	shift flag 0 - nothing happened
 //							   1 - new motion page set
 int walk_shift()

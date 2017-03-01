@@ -54,8 +54,8 @@ typedef enum {
 #define PIN_ZIGBEE_RESET		GPIO_Pin_12
 
 typedef enum {
-	STATE_PRESSED,
 	STATE_RELEASED,
+	STATE_PRESSED,
 	STATE_UNCHANGED
 } button_state;
 
@@ -71,4 +71,4 @@ int rc100_send_data(int data);
 
 int rc100_read_data(void);
 
-button_state rc100_read_state(button btn);
+button_state rc100_get_btn_change_state(button btn);

@@ -164,15 +164,20 @@ void rc100_update() {
 }
 
 /* Returns the state of a given button this frame. See header file for button definitions. */
-button_state rc100_read_state(button btn) {
-	if (btn_state_old == btn_state_new) {
+button_state rc100_get_btn_change_state(button btn) {
+	if (btn_state_old & btn == btn_state_new & btn) {
 		return STATE_UNCHANGED;
-	} else if ((btn_state_old & btn) > (btn_state_new & btn)) {
+	} else if (btn_state_old & btn) {
 		return STATE_RELEASED;
 	}
 
 	return STATE_PRESSED;
 }
+
+button_state rc100_get_btn_state(button btn) {
+	return btn_state_new & btn;
+}
+
 
 int rc100_send_data(int data) {
 	unsigned char snd_packet[6];
