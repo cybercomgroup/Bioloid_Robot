@@ -14,6 +14,9 @@ unsigned char gb_rcv_packet_num;
 unsigned short gw_rcv_data;
 unsigned char gb_rcv_flag;
 
+unsigned short btn_state_new = 0;
+unsigned short btn_state_old = 0;
+
 volatile byte                   gb_packet_wr_pointer = 0;
 volatile byte                   gb_packet_rd_pointer = 0;
 volatile byte                   gb_packet_pointer = 0;
@@ -150,6 +153,25 @@ int rc100_check(void) {
 
 
 
+}
+
+/* This must always be run before reading the state! */
+void rc100_update() {
+	if (rc100_check()) {
+		btn_state_old = btn_state_new;
+		btn_state_new = rc100_read_data();
+	}
+}
+
+/* Returns the state of a given button this frame. See header file for button definitions. */
+button_state rc100_read_state(button btn) {
+	if (btn_state_old == btn_state_new) {
+		return STATE_UNCHANGED;
+	} else if ((btn_state_old & btn) > (btn_state_new & btn)) {
+		return STATE_RELEASED;
+	}
+
+	return STATE_PRESSED;
 }
 
 int rc100_send_data(int data) {
