@@ -22,6 +22,9 @@
 #ifndef POSE_H_
 #define POSE_H_
 
+#include "typedefs.h"
+#include "global.h"
+
 // define more readable constants for moveToGoalPose wait_flag
 #define WAIT_FOR_POSE_FINISH		1
 #define DONT_WAIT_FOR_POSE_FINISH	0

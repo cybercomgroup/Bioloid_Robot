@@ -45,7 +45,9 @@ void gyro_init() {
 
 	GPIO_SetBits(PORT_GYRO, PIN_GYRO_ROLL_MOTP); //Power the roll sensor
 	GPIO_ResetBits(PORT_GYRO, PIN_GYRO_ROLL_MOTM);
+}
 
+void gyro_calibrate() {
 	const int samples = 10;
 	for (int i = 0; i < samples; i++)
 	{
@@ -106,22 +108,22 @@ void gyro_read() {
 
 }
 
-word get_adc_gyro_x()
+word gyro_get_x()
 {
 	return adc_gyro_x;
 }
 
-word get_adc_gyro_y()
+word gyro_get_y()
 {
 	return adc_gyro_y;
 }
 
-word get_adc_gyro_center_x()
+word gyro_get_center_x()
 {
 	return adc_gyro_center_x;
 }
 
-word get_adc_gyro_center_y()
+word gyro_get_center_y()
 {
 	return adc_gyro_center_y;
 }

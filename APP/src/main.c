@@ -10,6 +10,7 @@
 #include "sensors.h"
 #include "motion_f.h"
 #include "walk.h"
+#include "balance.h"
 
 //TODO: Move this stuff to a suitable header file:
 /* --- */
@@ -316,6 +317,8 @@ int main(void)
 
 	Timer_Configuration();
 
+	gyro_init(); // power on the gyro as soon as possible, as it takes some time for it to stabilize drift, etc.
+
 	/* Enable ZigBee receiver for rc100 controller */
 	USART_Configuration(USART_ZIGBEE, 57600);
 
@@ -343,10 +346,8 @@ int main(void)
 	printf("Init rc100...\n");
 	rc100_init();
 
-
-
 	printf("Calbirating gyro...\n");
-	gyro_init();
+	gyro_calibrate();
 	printf("Calbirating gyro done!\n");
 
 
@@ -378,8 +379,15 @@ void mainLoop() {
 	int ir_left, ir_right;
 	set_pose_mode(POSE_MODE_SYNC);
 	int iteration = 0;
+	int frame_time = 0;
+	u32 start_frame_micros = micros();
 	while(1) {
 		iteration++;
+
+		frame_time = micros() - start_frame_micros;
+		start_frame_micros = start_frame_micros + frame_time;
+
+		if (iteration % 1000 == 0) printf("last frame_time is: %d\n", frame_time);
 
 		update_servo_positions();
 
@@ -408,7 +416,9 @@ void mainLoop() {
 
 		/* Read gyro sensors? */
 		gyro_update();
-		if (iteration %100 == 0) printf("Gyro values: pitch %d, roll %d\n", (s16)gyro_get_pitch(), (s16)gyro_get_roll());
+		if (iteration %100 == 0) printf("Gyro values: pitch %d, roll %d\n", gyro_get_x(), gyro_get_y());
+
+		//balance();
 
 		evaluate_current_command();
 

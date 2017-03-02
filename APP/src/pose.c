@@ -320,6 +320,7 @@ void apply_new_pose_and_offsets()
 		}
 
 		if (offsets[i] != offsets_shadow[i]) {
+			s16 old_offset = offsets_shadow[i];
 			offsets_shadow[i] = offsets[i];
 
 			u32 est_time = (uint16) ( ((uint32) 848 * 1000 * abs(offsets[i])) / 1023 );
@@ -327,7 +328,7 @@ void apply_new_pose_and_offsets()
 			offset_timings[i] = now + est_time;
 
 			// apply offsets + bounds
-			s16 goal_tmp = current_pose[i] + offsets[i];
+			s16 goal_tmp = current_pose[i] - old_offset + offsets[i];
 			if (goal_tmp < 0)
 				goal_tmp = 0;
 			else if (goal_tmp > 1023)

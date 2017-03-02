@@ -7,8 +7,8 @@
 
 #include "balance.h"
 #include "pose.h"
-#include "motion.h"
 #include "sensors.h"
+#include "printf.h"
 
 #define DEFAULT_ADJUSTMENT_TIME 20
 
@@ -29,15 +29,15 @@ s16 finalrlbal2;
 
 u16 last_update;
 
-void read_gyro()
+void update_balance_error()
 {
-	gyro_read();
+	// gyro_read(); // already read in main loop
 
-	fbbaldata = get_adc_gyro_x();
-	rlbaldata = get_adc_gyro_x();
+	fbbaldata = gyro_get_x();
+	rlbaldata = gyro_get_y();
 
-	fbbalerror = fbbaldata - get_adc_gyro_center_x();
-	rlbalerror = rlbaldata - get_adc_gyro_center_y();
+	fbbalerror = fbbaldata - gyro_get_center_x();
+	rlbalerror = rlbaldata - gyro_get_center_y();
 }
 
 u16 constrain_balancing() {
@@ -63,20 +63,28 @@ void balance()
 	if(millis() - last_update >= DEFAULT_ADJUSTMENT_TIME)
 	{
 		last_update = millis();
-		read_gyro();
+		update_balance_error();
 
 		if(constrain_balancing()) {
 			scale_offsets();
 
-			setJointOffsetById(13,finalfbbal1);
-			setJointOffsetById(15,finalfbbal2);
-			setJointOffsetById(14,finalfbbal1);
-			setJointOffsetById(16,finalfbbal2);
-
-			setJointOffsetById(9,finalrlbal1);
-			setJointOffsetById(10,finalrlbal2);
-			setJointOffsetById(17,finalrlbal1);
-			setJointOffsetById(18,finalrlbal2);
+			printf("fbbalerror: %d\n", fbbalerror);
+			printf("rlbalerror: %d\n", rlbalerror);
+			printf("fbbalerrorscaled: %d\n", fbbalerrorscaled);
+			printf("rlbalerrorscaled: %d\n", rlbalerrorscaled);
+			printf("finalfbbal1: %d\n", finalfbbal1);
+			printf("finalfbbal2: %d\n", finalfbbal2);
+			printf("finalrlbal1: %d\n", finalrlbal1);
+			printf("finalrlbal2: %d\n", finalrlbal2);
+//			setJointOffsetById(13,finalfbbal1);
+//			setJointOffsetById(15,finalfbbal2);
+//			setJointOffsetById(14,finalfbbal1);
+//			setJointOffsetById(16,finalfbbal2);
+//
+//			setJointOffsetById(9,finalrlbal1);
+//			setJointOffsetById(10,finalrlbal2);
+//			setJointOffsetById(17,finalrlbal1);
+//			setJointOffsetById(18,finalrlbal2);
 		}
 
 	}
