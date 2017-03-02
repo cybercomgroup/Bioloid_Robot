@@ -105,3 +105,23 @@ void gyro_read() {
 	//GPIO_ResetBits(PORT_GYRO, PIN_GYRO_ROLL_MOTM);
 
 }
+
+word get_adc_gyro_x()
+{
+	return adc_gyro_x;
+}
+
+word get_adc_gyro_y()
+{
+	return adc_gyro_y;
+}
+
+word get_adc_gyro_center_x()
+{
+	return adc_gyro_center_x;
+}
+
+word get_adc_gyro_center_y()
+{
+	return adc_gyro_center_y;
+}

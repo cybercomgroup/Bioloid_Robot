@@ -8,15 +8,18 @@
 #include "balance.h"
 #include "pose.h"
 #include "motion.h"
-#include "gyro.h"
+#include "sensors.h"
 
 #define DEFAULT_ADJUSTMENT_TIME 20
 
-s16 pitch;
-s16 roll;
+s16 fbbaldata;
+s16 rlbaldata;
 
-s16 pitch_scaled;
-s16 roll_scaled;
+s16 fbbalerror;
+s16 rlbalerror;
+
+s16 fbbalerrorscaled;
+s16 rlbalerrorscaled;
 
 s16 finalfbbal1;
 s16 finalfbbal2;
@@ -30,8 +33,11 @@ void read_gyro()
 {
 	gyro_read();
 
-	pitch = gyro_get_pitch();
-	roll = gyro_get_roll();
+	fbbaldata = get_adc_gyro_x();
+	rlbaldata = get_adc_gyro_x();
+
+	fbbalerror = fbbaldata - get_adc_gyro_center_x();
+	rlbalerror = rlbaldata - get_adc_gyro_center_y();
 }
 
 u16 constrain_balancing() {
@@ -41,14 +47,14 @@ u16 constrain_balancing() {
 
 void scale_offsets()
 {
-	pitch_scaled = pitch * 4;
-	roll_scaled = roll * 4;
+	fbbalerrorscaled = fbbalerror * 4;
+	rlbalerrorscaled = rlbalerror * 4;
 
-	finalfbbal1 = pitch_scaled / 54;
-	finalfbbal2 = pitch_scaled / 18;
+	finalfbbal1 = fbbalerrorscaled / 54;
+	finalfbbal2 = fbbalerrorscaled / 18;
 
-	finalrlbal1 = roll_scaled / 20;
-	finalrlbal2 = roll_scaled / 40;
+	finalrlbal1 = rlbalerrorscaled / 20;
+	finalrlbal2 = rlbalerrorscaled / 40;
 }
 
 void balance()
