@@ -879,20 +879,32 @@ int setMotionPageJointFlexibility()
 // Returns:  (int)	number of servos still moving
 int checkMotionStepFinished()
 {
-	uint8 moving_flag;
-	
-	// reset the flag
-	moving_flag = 0;
-		
-	for (int i=0; i<NUM_AX12_SERVOS; i++) {
-		// keep reading the moving state of servos 
-		moving_flag += dxl_read_byte( AX12_IDS[i], DXL_MOVING );
-		// if anything still moving - return
-		if ( moving_flag == 1) {
-			return moving_flag;
-		}
-	}		
+
+	// use the same logic as when walking, only go on expected time.
+	//TEST:
+	//printf("checkMotionStepFinished %d %d %d\n", step_start_time,  CurrentMotion.PlayTime[current_step-1], millis() );
+	if (millis() < step_start_time + CurrentMotion.PlayTime[current_step-1]) {
+		return 1;
+	}
 	return 0;
+
+	// original code that doesnt work with offset adjustments, because the offset adjustments will block transition to next step.
+//	uint8 moving_flag;
+//
+//	// reset the flag
+//	moving_flag = 0;
+//
+//	for (int i=0; i<NUM_AX12_SERVOS; i++) {
+//		// keep reading the moving state of servos
+//		moving_flag += dxl_read_byte( AX12_IDS[i], DXL_MOVING );
+//		// if anything still moving - return
+//		if ( moving_flag == 1) {
+//			return moving_flag;
+//		}
+//	}
+//	return 0;
+
+
 }
 
 // This function executes a single robot motion page defined in motion.h

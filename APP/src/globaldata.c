@@ -65,7 +65,6 @@ volatile bool  major_alarm = FALSE;			// Major alarms that should stop execution
 
 // keep the current pose and joint offsets as global variables
 volatile int16 current_pose[NUM_AX12_SERVOS];
-volatile int16 joint_offset[NUM_AX12_SERVOS];
 // arrays that indicate which servos move in each step/motion page
 volatile uint8 motion_step_servos_moving[MAX_MOTION_STEPS][NUM_AX12_SERVOS];
 volatile uint8 motion_servos_moving[NUM_AX12_SERVOS];

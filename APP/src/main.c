@@ -10,6 +10,7 @@
 #include "sensors.h"
 #include "string.h"
 #include "motion_f.h"
+#include "walk.h"
 
 //TODO: Move this stuff to a suitable header file:
 /* --- */
@@ -323,8 +324,11 @@ int main(void)
 
 void mainLoop() {
 	int ir_left, ir_right;
+	set_pose_mode(POSE_MODE_SYNC);
+	int iteration = 0;
 	while(1) {
-		readCurrentPose();
+		iteration++;
+		if (iteration % 2 == 1) readCurrentPose();
 
 		/* Interpret command from controller.
 		 * This function automatically sets the next command if applicable. */
@@ -351,14 +355,15 @@ void mainLoop() {
 
 		/* Read gyro sensors? */
 		gyro_update();
-		//printf("Gyro values: pitch %d, roll %d\n", gyro_get_pitch(), gyro_get_roll());
+		if (iteration %100 == 0) printf("Gyro values: pitch %d, roll %d\n", gyro_get_pitch(), gyro_get_roll());
 
 		evaluate_current_command();
 
-		executeMotionSequence(); // update the current motion state (use startMotionIfIdle to start a new motion)
 		walk_shift();
+		executeMotionSequence(); // update the current motion state (use startMotionIfIdle to start a new motion)
 
-		checkOffsets();
+
+		apply_new_pose_and_offsets();
 	}
 }
 
@@ -405,10 +410,10 @@ int lean_left_right(u16 time, s16 amount) {
 //	setJointOffsetById(17, amount);
 //	setJointOffsetById(18, amount);
 //	return moveToGoalPose(time, getCurrentGoalPose(), 0);
-	applyJointOffsetById(9, amount);
-	applyJointOffsetById(10, amount);
-	applyJointOffsetById(17, amount);
-	applyJointOffsetById(18, amount);
+	setJointOffsetById(9, amount);
+	setJointOffsetById(10, amount);
+	setJointOffsetById(17, amount);
+	setJointOffsetById(18, amount);
 	return 0;
 }
 

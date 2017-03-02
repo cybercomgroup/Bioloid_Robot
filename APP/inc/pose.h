@@ -28,14 +28,17 @@
 #define READ_ALL					1
 #define READ_MOVING					0
 
+typedef enum {
+	POSE_MODE_DIRECT,
+	POSE_MODE_SYNC
+} POSE_MODE;
+
 // global hardware definition variables
 extern const uint8 AX12Servos[MAX_AX12_SERVOS];
 extern const uint8 AX12_IDS[NUM_AX12_SERVOS];
 // should keep the current pose in a global array
 extern volatile int16 current_pose[NUM_AX12_SERVOS];
 extern volatile uint8 motion_step_servos_moving[MAX_MOTION_STEPS][NUM_AX12_SERVOS];
-// joint offset values
-extern volatile int16 joint_offset[NUM_AX12_SERVOS];
 
 
 // read in current servo positions to determine current pose
@@ -73,8 +76,12 @@ void moveToDefaultPose(void);
 
 void resetJointOffsets(void);
 
+void set_pose_mode(POSE_MODE mode);
+
 void setJointOffsetById(u8 id, int16 offset);
 
 uint16 * getCurrentGoalPose();
+
+void apply_new_pose_and_offsets();
 
 #endif /* POSE_H_ */
