@@ -46,5 +46,9 @@ word gyro_get_roll();
 void gyro_update();
 void gyro_read();
 void gyro_init();
+word get_adc_gyro_x();
+word get_adc_gyro_y();
+word get_adc_gyro_center_x();
+word get_adc_gyro_center_y();
 
 #endif
