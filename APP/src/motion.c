@@ -816,7 +816,7 @@ void unpackMotion(int StartPage)
 // Returns (long) start time of the step
 unsigned long executeMotionStep(int Step)
 {
-	uint16 goalPose[NUM_AX12_SERVOS];
+	//uint16 goalPose[NUM_AX12_SERVOS];
 	unsigned long step_start_time;
 
 	// Make sure we never access random memory by accident and damage the robot
@@ -825,12 +825,13 @@ unsigned long executeMotionStep(int Step)
 		// TEST printf("\nStarting Motion Step %i", Step);
 		
 		// create the servo values array 
-		for (int j=0; j<NUM_AX12_SERVOS; j++)
-			{ goalPose[j] = CurrentMotion.StepValues[Step-1][j]; }
+		// actually no need to copy, just send in the CurrentMotion.StepValues[Step-1] array directly
+		//for (int j=0; j<NUM_AX12_SERVOS; j++)
+		//	{ goalPose[j] = CurrentMotion.StepValues[Step-1][j]; }
 		// take the time
 		step_start_time = millis();
 		// execute the pose without waiting for completion
-		moveToGoalPose(CurrentMotion.PlayTime[Step-1], goalPose, DONT_WAIT_FOR_POSE_FINISH);
+		moveToGoalPose(CurrentMotion.PlayTime[Step-1], CurrentMotion.StepValues[Step-1], DONT_WAIT_FOR_POSE_FINISH);
 		// return the start time to keep track of step timing
 		return step_start_time;
 	} else {
