@@ -48,11 +48,13 @@ uint32 last_interpret_input_millis = -1; // dummy value to check at first iterat
 
 void _serial_putc(void*, char); // put a char in serial console
 
-int lean_left_right(u16 speed, s16 amount);
-#define lean_left(speed, amount) lean_left_right(speed, amount)
-#define lean_right(speed, amount) lean_left_right(speed, -amount)
+int lean_left_right(s16 amount);
+#define lean_left( amount) lean_left_right( amount)
+#define lean_right( amount) lean_left_right( -amount)
 
 int8 cmd_lean_amount = 0;
+
+bool do_balance = 1;
 
 uint16 pose[NUM_AX12_SERVOS] = {235,788,279,744,462,561,358,666,507,516,341,682,240,783,647,376,507,516};
 uint16 speeds[NUM_AX12_SERVOS];
@@ -74,76 +76,76 @@ int startMotionIfIdle(int motionPageId) {
 
 /* Returns -1 if there is no new input, otherwise returns the data sent
  * from the controller.  */
-void interpret_input(int input) {
-	uint32 t = millis();
-	uint32 dt;
-	if (last_interpret_input_millis != -1)
-		dt = t - last_interpret_input_millis;
-	else
-		dt = 0;
-	last_interpret_input_millis = t;
-
-	command cmd;
-	if (input & RC100_BTN_L && input & RC100_BTN_R) {
-		printCurrentMotionPage();
-	}
-	if (input & RC100_BTN_U) {
-		cmd = CMD_WALK_FORWARD;
-		printf("Up!");
-		//Do some stuff to make sure that the robot finishes its current motion!
-
-		startMotionIfIdle(32);
-		bioloid_command = COMMAND_WALK_FORWARD;
-
-	} else if (input & RC100_BTN_D) {
-		cmd = CMD_WALK_BACKWARD;
-		printf("Down!");
-
-	} else if (input & RC100_BTN_L) {
-		cmd = CMD_TURN_LEFT;
-		printf("Left!");
-
-	} else if (input & RC100_BTN_R) {
-		cmd = CMD_TURN_RIGHT;
-		printf("Right!");
-
-	} else if (input & RC100_BTN_1) {
-		printf("Standing up.\n");
-		startMotionIfIdle(MOTION_STAND);
-
-	} else if (input & RC100_BTN_2) {
-		printf("Kicking.\n");
-		startMotionIfIdle(MOTION_STAND);
-
-	} else if (input & RC100_BTN_3) {
-		printf("Sitting down.\n");
-		startMotionIfIdle(MOTION_SIT);
-
-	} else if (input & RC100_BTN_4) {
-		printf("Rapping chest.\n");
-		startMotionIfIdle(MOTION_RAP_CHEST);
-
-	}
-
-
-
-	if ((input & RC100_BTN_5) &&  (input & RC100_BTN_6)) {
-		cmd_lean_amount = 0;
-	} else if (input & RC100_BTN_5) {
-		printf("Lean left. \n");
-		//startMotionIfIdle(MOTION_ATTACK_R);
-		//lean_left(500, 30);
-		cmd_lean_amount = 10;
-	} else if (input & RC100_BTN_6) {
-		printf("lean right. \n");
-		//startMotionIfIdle(MOTION_ATTACK_L);
-		cmd_lean_amount = -10;
-	} else {
-		cmd_lean_amount = 0;
-	}
-
-	lean_left_right(500, cmd_lean_amount);
-}
+//void interpret_input(int input) {
+//	uint32 t = millis();
+//	uint32 dt;
+//	if (last_interpret_input_millis != -1)
+//		dt = t - last_interpret_input_millis;
+//	else
+//		dt = 0;
+//	last_interpret_input_millis = t;
+//
+//	command cmd;
+//	if (input & RC100_BTN_L && input & RC100_BTN_R) {
+//		printCurrentMotionPage();
+//	}
+//	if (input & RC100_BTN_U) {
+//		cmd = CMD_WALK_FORWARD;
+//		printf("Up!");
+//		//Do some stuff to make sure that the robot finishes its current motion!
+//
+//		startMotionIfIdle(32);
+//		bioloid_command = COMMAND_WALK_FORWARD;
+//
+//	} else if (input & RC100_BTN_D) {
+//		cmd = CMD_WALK_BACKWARD;
+//		printf("Down!");
+//
+//	} else if (input & RC100_BTN_L) {
+//		cmd = CMD_TURN_LEFT;
+//		printf("Left!");
+//
+//	} else if (input & RC100_BTN_R) {
+//		cmd = CMD_TURN_RIGHT;
+//		printf("Right!");
+//
+//	} else if (input & RC100_BTN_1) {
+//		printf("Standing up.\n");
+//		startMotionIfIdle(MOTION_STAND);
+//
+//	} else if (input & RC100_BTN_2) {
+//		printf("Kicking.\n");
+//		startMotionIfIdle(MOTION_STAND);
+//
+//	} else if (input & RC100_BTN_3) {
+//		printf("Sitting down.\n");
+//		startMotionIfIdle(MOTION_SIT);
+//
+//	} else if (input & RC100_BTN_4) {
+//		printf("Rapping chest.\n");
+//		startMotionIfIdle(MOTION_RAP_CHEST);
+//
+//	}
+//
+//
+//
+//	if ((input & RC100_BTN_5) &&  (input & RC100_BTN_6)) {
+//		cmd_lean_amount = 0;
+//	} else if (input & RC100_BTN_5) {
+//		printf("Lean left. \n");
+//		//startMotionIfIdle(MOTION_ATTACK_R);
+//		//lean_left(500, 30);
+//		cmd_lean_amount = 10;
+//	} else if (input & RC100_BTN_6) {
+//		printf("lean right. \n");
+//		//startMotionIfIdle(MOTION_ATTACK_L);
+//		cmd_lean_amount = -10;
+//	} else {
+//		cmd_lean_amount = 0;
+//	}
+//
+//	lean_left_right(500, cmd_lean_amount);
+//}
 
 /*
  * Reads input from the remote. Returns 1 if successful, otherwise 0.
@@ -187,6 +189,13 @@ int controller_read_input(void) {
 		new_command = 1;
 	}
 
+	if (rc100_get_btn_change_state(RC100_BTN_L) == STATE_PRESSED) {
+		// toggle balance
+		printf("Toggle balance: %d\n", !do_balance);
+		do_balance = ! do_balance;
+	}
+
+
 	if (rc100_get_btn_change_state(RC100_BTN_1) == STATE_PRESSED) {
 		printf("Standing up.\n");
 		startMotionIfIdle(MOTION_STAND);
@@ -205,20 +214,21 @@ int controller_read_input(void) {
 	}
 
 	if (rc100_get_btn_change_state(RC100_BTN_5) == STATE_PRESSED) {
-		printf("Leaning left.\n");
-
+		printf("Leaning right.\n");
+		//lean_left(10);
+		lean_left_right(10);
 	}
 	else if (rc100_get_btn_change_state(RC100_BTN_6) == STATE_PRESSED) {
-		printf("Leaning right.\n");
-		lean_right(0, 10);
+		printf("Leaning left.\n");
+		lean_right(10);
 	}
-	if (rc100_get_btn_state(RC100_BTN_5)) {
-		lean_left(0, 10);
-	} else if (rc100_get_btn_state(RC100_BTN_6)) {
-		lean_right(0, 10);
-	} else {
-		lean_left(0, 0);
-	}
+//	if (rc100_get_btn_state(RC100_BTN_5)) {
+//		lean_right(10);
+//	} else if (rc100_get_btn_state(RC100_BTN_6)) {
+//		lean_left(10);
+//	} else {
+//		lean_left(0);
+//	}
 
 	return 0;
 }
@@ -347,6 +357,7 @@ int main(void)
 	rc100_init();
 
 	printf("Calbirating gyro...\n");
+	//mDelay(80 * 1000); // sleep a long long time.
 	gyro_calibrate();
 	printf("Calbirating gyro done!\n");
 
@@ -416,9 +427,11 @@ void mainLoop() {
 
 		/* Read gyro sensors? */
 		gyro_update();
-		if (iteration %100 == 0) printf("Gyro values: pitch %d, roll %d\n", gyro_get_x(), gyro_get_y());
+		gyro_calibrate_incremental();
+		//if (iteration %100 == 0) printf("Gyro values: x=%d, y=%d, center x=%d, center y=%d\n", gyro_get_x(), gyro_get_y(), gyro_get_center_x(), gyro_get_center_y());
 
-		//balance();
+		if (do_balance)
+			balance();
 
 		evaluate_current_command();
 
@@ -457,7 +470,7 @@ void balance_left_right() {
 		for (int i = 0; 1; i++) {
 			int16 lean = (i % 2) ? 30 : -30;
 			printf("Leaning %s (%d). \n", (i % 2) ? "left" : "right", lean);
-			lean_left_right(2000, lean);
+			lean_left_right( lean);
 			waitForPoseFinish();
 		}
 	}
@@ -466,7 +479,7 @@ void balance_left_right() {
 // Read current pose and command the servos to go to the current pose + offset to hips and ankles
 // non blocking.
 // return: 0 on successful execution
-int lean_left_right(u16 time, s16 amount) {
+int lean_left_right(s16 amount) {
 	//u16 current_pose[NUM_AX12_SERVOS];
 	// read current pose
 	//for (int i = 0; i < NUM_AX12_SERVOS; i++) {

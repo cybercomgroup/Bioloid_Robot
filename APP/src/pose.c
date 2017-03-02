@@ -280,6 +280,7 @@ void setJointOffsetById(u8 id, s16 offset)
 		printf("setJointOffsetById: invalid servo id, did you perhaps send the index?\n");
 	}
 	offsets[id-1] = offset;
+	//printf("setting offset of %d to %d\n", id, offset);
 }
 
 

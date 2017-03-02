@@ -63,6 +63,12 @@ void gyro_calibrate() {
 	printf("Gyro calibration set to: x=%d, y=%d\n", adc_gyro_center_x, adc_gyro_center_y);
 }
 
+void gyro_calibrate_incremental() {
+	const int divisor = 10;
+	adc_gyro_center_x += ((signed int)adc_gyro_x - adc_gyro_center_x) / divisor;
+	adc_gyro_center_y += ((signed int)adc_gyro_y - adc_gyro_center_y) / divisor;
+}
+
 void gyro_read() {
 	/* Start with pitch */
 
