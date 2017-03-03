@@ -286,9 +286,15 @@ void setJointOffsetSpeedById(u8 id, s16 offset, u16 speed)
 	if (id == 0 || id > NUM_AX12_SERVOS) {
 		printf("setJointOffsetById: invalid servo id, did you perhaps send the index?\n");
 	}
+	if (offset_timings[id-1] != 0)
+		return;
 	offsets[id-1] = offset;
 	offsets_speeds[id-1] = speed;
 	//printf("setting offset of %d to %d\n", id, offset);
+}
+
+u32 get_offset_adjustment_time(int id) {
+	return offset_timings[id-1];
 }
 
 s16 get_offset(int id) {

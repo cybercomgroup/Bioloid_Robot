@@ -63,7 +63,7 @@ void RxD2Interrupt(void);
 
 void rc100_init(void);
 
-void rc100_update();
+bool rc100_update();
 
 int rc100_check(void);
 

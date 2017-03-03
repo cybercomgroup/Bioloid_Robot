@@ -16,6 +16,7 @@
 /* --- */
 #define MAX_OBSTACLE_DISTANCE 200
 
+
 typedef enum {
 	CMD_STOP 			= 0,
 	CMD_WALK_FORWARD 	= 1,
@@ -32,11 +33,6 @@ typedef enum {
 /* Global variables */
 
 // Button related variables
-volatile bool button_up_pressed = FALSE;
-volatile bool button_down_pressed = FALSE;
-volatile bool button_left_pressed = FALSE;
-volatile bool button_right_pressed = FALSE;
-volatile bool start_button_pressed = FALSE;
 volatile command current_command = CMD_WALK_AND_GRAB;
 
 extern volatile bool new_command;             // current command
@@ -52,12 +48,9 @@ int lean_left_right(s16 amount);
 #define lean_left( amount) lean_left_right( amount)
 #define lean_right( amount) lean_left_right( -amount)
 
-int8 cmd_lean_amount = 0;
-
+bool demo_walk_and_grab = 0;
 bool do_balance = 1;
 
-uint16 pose[NUM_AX12_SERVOS] = {235,788,279,744,462,561,358,666,507,516,341,682,240,783,647,376,507,516};
-uint16 speeds[NUM_AX12_SERVOS];
 int16 last_pose[NUM_AX12_SERVOS];
 
 //TODO: Most of these functions probably belong in another class.
@@ -75,79 +68,6 @@ int startMotionIfIdle(int motionPageId) {
 	return 0;
 }
 
-/* Returns -1 if there is no new input, otherwise returns the data sent
- * from the controller.  */
-//void interpret_input(int input) {
-//	uint32 t = millis();
-//	uint32 dt;
-//	if (last_interpret_input_millis != -1)
-//		dt = t - last_interpret_input_millis;
-//	else
-//		dt = 0;
-//	last_interpret_input_millis = t;
-//
-//	command cmd;
-//	if (input & RC100_BTN_L && input & RC100_BTN_R) {
-//		printCurrentMotionPage();
-//	}
-//	if (input & RC100_BTN_U) {
-//		cmd = CMD_WALK_FORWARD;
-//		printf("Up!");
-//		//Do some stuff to make sure that the robot finishes its current motion!
-//
-//		startMotionIfIdle(32);
-//		bioloid_command = COMMAND_WALK_FORWARD;
-//
-//	} else if (input & RC100_BTN_D) {
-//		cmd = CMD_WALK_BACKWARD;
-//		printf("Down!");
-//
-//	} else if (input & RC100_BTN_L) {
-//		cmd = CMD_TURN_LEFT;
-//		printf("Left!");
-//
-//	} else if (input & RC100_BTN_R) {
-//		cmd = CMD_TURN_RIGHT;
-//		printf("Right!");
-//
-//	} else if (input & RC100_BTN_1) {
-//		printf("Standing up.\n");
-//		startMotionIfIdle(MOTION_STAND);
-//
-//	} else if (input & RC100_BTN_2) {
-//		printf("Kicking.\n");
-//		startMotionIfIdle(MOTION_STAND);
-//
-//	} else if (input & RC100_BTN_3) {
-//		printf("Sitting down.\n");
-//		startMotionIfIdle(MOTION_SIT);
-//
-//	} else if (input & RC100_BTN_4) {
-//		printf("Rapping chest.\n");
-//		startMotionIfIdle(MOTION_RAP_CHEST);
-//
-//	}
-//
-//
-//
-//	if ((input & RC100_BTN_5) &&  (input & RC100_BTN_6)) {
-//		cmd_lean_amount = 0;
-//	} else if (input & RC100_BTN_5) {
-//		printf("Lean left. \n");
-//		//startMotionIfIdle(MOTION_ATTACK_R);
-//		//lean_left(500, 30);
-//		cmd_lean_amount = 10;
-//	} else if (input & RC100_BTN_6) {
-//		printf("lean right. \n");
-//		//startMotionIfIdle(MOTION_ATTACK_L);
-//		cmd_lean_amount = -10;
-//	} else {
-//		cmd_lean_amount = 0;
-//	}
-//
-//	lean_left_right(500, cmd_lean_amount);
-//}
-
 /*
  * Reads input from the remote. Returns 1 if successful, otherwise 0.
  */
@@ -162,139 +82,153 @@ int controller_read_input(void) {
 	 * HOWEVER!! It is crucial that rc100_update() is run before any button states are read, otherwise you will get old or useless values.
 	 * It is also important that rc100_check() is not run outside of the rc100 file since this might 'steal' data from rc100_update(). */
 
-	rc100_update();
+	while(rc100_update()) {
 
-	if (rc100_get_btn_change_state(RC100_BTN_U) == STATE_PRESSED) {
-		// Start walking forward
-		printf("Walking forward.\n");
-		startMotionIfIdle(32);
-		bioloid_command = COMMAND_WALK_FORWARD;
-	}
-	else if (rc100_get_btn_change_state(RC100_BTN_U) == STATE_RELEASED) {
-		// Stop walking forward
-		printf("Walking forward stop.\n");
-		bioloid_command = COMMAND_STOP;
-		new_command = 1;
-	}
+		if (rc100_get_btn_change_state(RC100_BTN_U) == STATE_PRESSED) {
+			// Start walking forward
+			printf("Walking forward.\n");
+			startMotionIfIdle(32);
+			bioloid_command = COMMAND_WALK_FORWARD;
+		}
+		else if (rc100_get_btn_change_state(RC100_BTN_U) == STATE_RELEASED) {
+			// Stop walking forward
+			printf("Walking forward stop. btn state=%d\n", rc100_get_btn_state(RC100_BTN_U));
+			bioloid_command = COMMAND_STOP;
+			new_command = 1;
+		}
 
-	else if (rc100_get_btn_change_state(RC100_BTN_D) == STATE_PRESSED) {
-		// Start walking backward
-		printf("Walking backward.\n");
-		startMotionIfIdle(32);
-		bioloid_command = COMMAND_WALK_FORWARD;
-	}
-	else if (rc100_get_btn_change_state(RC100_BTN_D) == STATE_RELEASED) {
-		// Stop walking backward
-		printf("Walking backward stop.\n");
-		bioloid_command = COMMAND_STOP;
-		new_command = 1;
-	}
+		else if (rc100_get_btn_change_state(RC100_BTN_D) == STATE_PRESSED) {
+			// Start walking backward
+			printf("Walking backward.\n");
+			startMotionIfIdle(32);
+			bioloid_command = COMMAND_WALK_BACKWARD;
+		}
+		else if (rc100_get_btn_change_state(RC100_BTN_D) == STATE_RELEASED) {
+			// Stop walking backward
+			printf("Walking backward stop.\n");
+			bioloid_command = COMMAND_STOP;
+			new_command = 1;
+		}
 
-	if (rc100_get_btn_change_state(RC100_BTN_L) == STATE_PRESSED) {
-		// toggle balance
-		printf("Toggle balance: %d\n", !do_balance);
-		do_balance = ! do_balance;
-	}
+		if (rc100_get_btn_change_state(RC100_BTN_L) == STATE_PRESSED) {
+			// toggle balance
+			printf("Toggle balance: %d\n", !do_balance);
+			do_balance = ! do_balance;
+		}
+
+		if (rc100_get_btn_change_state(RC100_BTN_R) == STATE_PRESSED) {
+			printf("Right pressed.\n");
+		}
+		else if (rc100_get_btn_change_state(RC100_BTN_R) == STATE_RELEASED) {
+			printf("Right released.\n");
+		}
 
 
-	if (rc100_get_btn_change_state(RC100_BTN_1) == STATE_PRESSED) {
-		printf("Standing up.\n");
-		startMotionIfIdle(MOTION_STAND);
-	}
-	else if (rc100_get_btn_change_state(RC100_BTN_2) == STATE_PRESSED) {
-		printf("resetting gyro.\n");
-		//startMotionIfIdle(MOTION_GRAB);
-		gyro_calibrate();
-		reset_pitch_roll();
-	}
-	else if (rc100_get_btn_change_state(RC100_BTN_3) == STATE_PRESSED) {
-		printf("Sitting down.\n");
-		startMotionIfIdle(MOTION_SIT);
-	}
-	else if (rc100_get_btn_change_state(RC100_BTN_4) == STATE_PRESSED) {
-		printf("Rapping chest.\n");
-		startMotionIfIdle(MOTION_RAP_CHEST);
-	}
+		if (rc100_get_btn_change_state(RC100_BTN_1) == STATE_PRESSED) {
+			printf("Standing up.\n");
+			startMotionIfIdle(MOTION_STAND);
+		}
+		else if (rc100_get_btn_change_state(RC100_BTN_2) == STATE_PRESSED) {
+			printf("resetting gyro.\n");
+			//startMotionIfIdle(MOTION_GRAB);
+			gyro_calibrate();
+			reset_pitch_roll();
+		}
+		else if (rc100_get_btn_change_state(RC100_BTN_3) == STATE_PRESSED) {
+//			printf("Sitting down.\n");
+//			startMotionIfIdle(MOTION_SIT);
+			printf("Mode 1: walk and grab, no balance\n");
+			do_balance = 0;
+			demo_walk_and_grab = 1;
+		}
+		else if (rc100_get_btn_change_state(RC100_BTN_4) == STATE_PRESSED) {
+//			printf("Rapping chest.\n");
+//			startMotionIfIdle(MOTION_RAP_CHEST);
+			printf("Mode 2: no grab, yes balance\n");
+			do_balance = 1;
+			demo_walk_and_grab = 0;
+		}
 
-	if (rc100_get_btn_change_state(RC100_BTN_5) == STATE_PRESSED) {
-		printf("Leaning right.\n");
-		//lean_left(10);
-		lean_left_right(10);
-	}
-	else if (rc100_get_btn_change_state(RC100_BTN_6) == STATE_PRESSED) {
-		printf("Leaning left.\n");
-		lean_right(10);
-	}
-//	if (rc100_get_btn_state(RC100_BTN_5)) {
-//		lean_right(10);
-//	} else if (rc100_get_btn_state(RC100_BTN_6)) {
-//		lean_left(10);
-//	} else {
-//		lean_left(0);
-//	}
+		if (rc100_get_btn_change_state(RC100_BTN_5) == STATE_PRESSED) {
+			printf("Leaning right.\n");
+			//lean_left(10);
+			lean_left_right(10);
+		}
+		else if (rc100_get_btn_change_state(RC100_BTN_6) == STATE_PRESSED) {
+			printf("Leaning left.\n");
+			lean_right(10);
+		}
+	//	if (rc100_get_btn_state(RC100_BTN_5)) {
+	//		lean_right(10);
+	//	} else if (rc100_get_btn_state(RC100_BTN_6)) {
+	//		lean_left(10);
+	//	} else {
+	//		lean_left(0);
+	//	}
 
+	}
 	return 0;
 }
 
-void update_walk(void) {
-	/* Here we need to do the following:
-	 *
-	 * 1: Check if the motors are at their goal position.
-	 * 2: If not, do nothing. Else, find the next motion page
-	 *	  in our current walk sequence (forward or backward).
-	 */
-}
+//void update_walk(void) {
+//	/* Here we need to do the following:
+//	 *
+//	 * 1: Check if the motors are at their goal position.
+//	 * 2: If not, do nothing. Else, find the next motion page
+//	 *	  in our current walk sequence (forward or backward).
+//	 */
+//}
+//
+//void evaluate_current_command(void) {
+//	switch(current_command) {
+//	case CMD_STOP:
+//		break;
+//	case CMD_WALK_FORWARD:
+//		update_walk();
+//		break;
+//	case CMD_WALK_BACKWARD:
+//		update_walk();
+//		break;
+//	case CMD_WALK_AND_GRAB:
+//		break;
+//	case CMD_GRAB:
+//		break;
+//	case CMD_TURN_LEFT:
+//		break;
+//	case CMD_TURN_RIGHT:
+//		break;
+//	case CMD_WAVE:
+//		break;
+//	}
+//}
 
-void evaluate_current_command(void) {
-	switch(current_command) {
-	case CMD_STOP:
-		break;
-	case CMD_WALK_FORWARD:
-		update_walk();
-		break;
-	case CMD_WALK_BACKWARD:
-		update_walk();
-		break;
-	case CMD_WALK_AND_GRAB:
-		break;
-	case CMD_GRAB:
-		break;
-	case CMD_TURN_LEFT:
-		break;
-	case CMD_TURN_RIGHT:
-		break;
-	case CMD_WAVE:
-		break;
-	}
-}
-
-void issue_command(command cmd) {
-	/* Set motion page etc.
-	 * We also most likely want to return to the
-	 * default pose before starting a new one! */
-	switch(cmd) {
-	case CMD_STOP:
-		break;
-	case CMD_WALK_FORWARD:
-		update_walk();
-		break;
-	case CMD_WALK_BACKWARD:
-		update_walk();
-		break;
-	case CMD_WALK_AND_GRAB:
-		break;
-	case CMD_GRAB:
-		startMotionIfIdle(MOTION_GRAB);
-		break;
-	case CMD_TURN_LEFT:
-		break;
-	case CMD_TURN_RIGHT:
-		break;
-	case CMD_WAVE:
-		break;
-	}
-	current_command = cmd;
-}
+//void issue_command(command cmd) {
+//	/* Set motion page etc.
+//	 * We also most likely want to return to the
+//	 * default pose before starting a new one! */
+//	switch(cmd) {
+//	case CMD_STOP:
+//		break;
+//	case CMD_WALK_FORWARD:
+//		update_walk();
+//		break;
+//	case CMD_WALK_BACKWARD:
+//		update_walk();
+//		break;
+//	case CMD_WALK_AND_GRAB:
+//		break;
+//	case CMD_GRAB:
+//		startMotionIfIdle(MOTION_GRAB);
+//		break;
+//	case CMD_TURN_LEFT:
+//		break;
+//	case CMD_TURN_RIGHT:
+//		break;
+//	case CMD_WAVE:
+//		break;
+//	}
+//	current_command = cmd;
+//}
 
 void mainLoop();
 void update_servo_positions();
@@ -310,7 +244,7 @@ void test_load_motions();
 
 int main(void)
 {
-	int res, exit = 0, ir_left, ir_right, i;
+	int res, exit = 0, i;
 
 	/* Initialization */
 
@@ -359,7 +293,7 @@ int main(void)
 	printf("Init rc100...\n");
 	rc100_init();
 
-	printf("Calbirating gyro...\n");
+	printf("Calibrating gyro...\n");
 	//mDelay(80 * 1000); // sleep a long long time.
 	gyro_calibrate();
 	printf("Calbirating gyro done!\n");
@@ -389,6 +323,31 @@ int main(void)
 	return 0;
 }
 
+void check_feet() {
+	word ir_left, ir_right;
+	/* Read data from sensors */
+	ir_left = read_ir_left();
+	ir_right = read_ir_right();
+	//printf("ir left: %d, right: %d\n", ir_left, ir_right);
+	//delay_ms(500); // delay so that we dont go as fast as possible.
+	/* Note that higher IR readings = closer! */
+	if (ir_left > MAX_OBSTACLE_DISTANCE || ir_right > MAX_OBSTACLE_DISTANCE) {
+		/* We might want to add separate handling depending on triggering foot */
+//		if (current_command == CMD_WALK_AND_GRAB) {
+			/* Try to blindly pick up whatever is in front of you. */
+//			issue_command(CMD_GRAB);
+		if (walk_getWalkState() != 0 || checkMotionFinished()) {
+			printf("Object detected! Lifting and grabbing!\n");
+			setNewMotionCommand(MOTION_GRAB);
+		}
+
+//		} else {
+			/* Turn to avoid obstacle */
+//			issue_command(CMD_TURN_LEFT);
+//		}
+	}
+}
+
 void mainLoop() {
 	int ir_left, ir_right;
 	set_pose_mode(POSE_MODE_SYNC);
@@ -409,23 +368,9 @@ void mainLoop() {
 		 * This function automatically sets the next command if applicable. */
 		controller_read_input();
 
-		/* Read data from sensors */
-		ir_left = read_ir_left();
-		ir_right = read_ir_right();
 
-		//printf("ir left: %d, right: %d\n", ir_left, ir_right);
-		//delay_ms(500); // delay so that we dont go as fast as possible.
-
-		/* Note that higher IR readings = closer! */
-		if (ir_left > MAX_OBSTACLE_DISTANCE || ir_right > MAX_OBSTACLE_DISTANCE) {
-			/* We might want to add separate handling depending on triggering foot */
-			if (current_command == CMD_WALK_AND_GRAB) {
-				/* Try to blindly pick up whatever is in front of you. */
-				issue_command(CMD_GRAB);
-			} else {
-				/* Turn to avoid obstacle */
-				issue_command(CMD_TURN_LEFT);
-			}
+		if (demo_walk_and_grab) {
+			check_feet();
 		}
 
 		/* Read gyro sensors? */
@@ -443,10 +388,10 @@ void mainLoop() {
 
 		if (do_balance) {
 			if (walk_getWalkState() != 0 || checkMotionFinished())
-			balance();
+				balance();
 		}
 
-		evaluate_current_command();
+//		evaluate_current_command();
 
 		executeMotionSequence(); // update the current motion state (use startMotionIfIdle to start a new motion)
 
@@ -564,37 +509,6 @@ void run_tests() {
 	testAbsFn();
 }
 
-void dxl_test1() {
-	int8 i;
-
-	/* Example to set the speeds (of all servos) and position (of single servo). */
-	// Set goal speed
-	dxl_write_word( BROADCAST_ID, DXL_MOVING_SPEED_L, 26); // goal speed must be between 26 and 1023, other values default to max speed
-	// Set goal position
-	dxl_write_word( 1, DXL_GOAL_POSITION_L, 512 );
-	mDelay(1000);
-
-	//printf("Moving to default pose.\n");
-	//for (i=0;i< NUM_AX12_SERVOS; i++ )
-	//	pose[i] = current_pose[i];
-	//pose[0] = 235;
-
-	//moveToGoalPose(1000, pose, 0);
-	//printf("done\n");
-	//return 0;
-//	printf("dbg goal speed: %d %d %d \n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
-
-	for (i=0;i< NUM_AX12_SERVOS; i++ )
-		speeds[i] = 100;
-
-	//printf("goal speed2: %d\n", speeds[0]);
-	//printf("speeds  %d %d %d \n", dbgSpeeds[0], dbgSpeeds[1], dbgSpeeds[2]);
-	//dxl_set_goal_speed(NUM_AX12_SERVOS, AX12_IDS, pose, speeds);
-	dxl_set_goal_speed(1, AX12_IDS, pose, speeds);
-	//moveToDefaultPose();
-	//printf("Moving to default pose done! commstatus %d\n", comSt);
-	mDelay(1000);
-}
 
 void dxl_test2() {
 	executeMotion(26); // stand up

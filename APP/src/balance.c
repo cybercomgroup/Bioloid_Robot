@@ -10,14 +10,16 @@
 #include "sensors.h"
 #include "printf.h"
 
-#define DEFAULT_ADJUSTMENT_TIME 50
+#define DEFAULT_ADJUSTMENT_TIME 30
 #define P_REGULATION 1
 #define D_REGULATION 1
+
+#define LOW_PASS 1
 
 s16 fbbalerror;
 s16 rlbalerror;
 
-s16 fbbalerrorscaled;
+s16 fbbalerrorscaled, fbbalerrorscaled_filtered;
 s16 rlbalerrorscaled;
 
 s16 front_back_balance_adjustment_1;
@@ -27,6 +29,15 @@ s16 left_right_balance_adjustment_1;
 s16 left_right_balance_adjustment_2;
 
 u16 last_update;
+
+int balance_iteration = 0;
+
+u32 dt;
+
+#define N_SAMPLES 10
+#define CUTOFF 6
+
+int fb_scaled_values[N_SAMPLES];
 
 void update_balance_error()
 {
@@ -49,6 +60,19 @@ u16 constrain_balancing() {
 	return 1;
 }
 
+int lowPassFrequency(const int* input, /*int* output,*/ int dt, int points, int cutoff)
+{
+    long RC = (1000/cutoff) / 6;
+    //output[0] = input[0];
+    int output = input[0];
+    for(int i = 1; i < points; ++i)
+    {
+    	output = output + ((input[i] - output) * dt / (RC+dt));
+    }
+    return output;
+}
+
+
 void scale_offsets()
 {
 	front_back_balance_adjustment_1 = 0;
@@ -60,6 +84,18 @@ void scale_offsets()
 		fbbalerrorscaled = fbbalerror*3;
 		rlbalerrorscaled = rlbalerror*3;
 
+		if (LOW_PASS) {
+
+			for (int i = 0; i < N_SAMPLES-1; i++) {
+				fb_scaled_values[i] = fb_scaled_values[i+1];
+			}
+			fb_scaled_values[N_SAMPLES-1] = fbbalerrorscaled;
+
+			//fbbalerrorscaled_filtered = lowPassFrequency(fb_scaled_values, dt, N_SAMPLES, 5);
+			fbbalerrorscaled = lowPassFrequency(fb_scaled_values, dt, N_SAMPLES, CUTOFF);
+
+		}
+
 		// limit FB output
 		const int fbLimit = 250;
 		fbbalerrorscaled = fbbalerrorscaled > fbLimit ? fbLimit : fbbalerrorscaled;
@@ -69,7 +105,7 @@ void scale_offsets()
 		rlbalerrorscaled = rlbalerrorscaled > rlLimit ? rlLimit : rlbalerrorscaled;
 		rlbalerrorscaled = rlbalerrorscaled < -rlLimit ? -rlLimit : rlbalerrorscaled;
 
-		front_back_balance_adjustment_1 += fbbalerrorscaled / 60; // adjustment for the knees
+		front_back_balance_adjustment_1 += fbbalerrorscaled / 70; // adjustment for the knees
 		front_back_balance_adjustment_2 += fbbalerrorscaled / 25;
 
 		left_right_balance_adjustment_1 += rlbalerrorscaled / 30;
@@ -102,16 +138,20 @@ void scale_offsets()
 	}
 }
 
-int iteration = 0;
+
+
 void balance()
 {
-	if(millis() - last_update >= DEFAULT_ADJUSTMENT_TIME)
+	u32 t = millis();
+	dt = t - last_update;
+	if(dt >= DEFAULT_ADJUSTMENT_TIME)
 	{
-		last_update = millis();
+		last_update = t;
 		update_balance_error();
 
 		if(constrain_balancing()) {
 			scale_offsets();
+
 
 //			if (1) {
 //				printf("\nfbbalerror: %d\n", fbbalerror);
@@ -131,10 +171,21 @@ void balance()
 				//printf("offsets is: %d %d %d %d\n", get_offset(13), get_offset(15) ,get_offset(14), get_offset(16));
 			}
 			/* Balance front/back */
-			setJointOffsetSpeedById(13,  front_back_balance_adjustment_1, 1023); // adjustment for the knees
-			setJointOffsetSpeedById(15,  front_back_balance_adjustment_2, 1023);
-			setJointOffsetSpeedById(14, -front_back_balance_adjustment_1, 1023); // adjustment for the knees
-			setJointOffsetSpeedById(16, -front_back_balance_adjustment_2, 1023);
+			int speed = 1023;
+//			int speed = 1023 / (abs(fbbalerror)/8 +1);
+//			if(speed < 500) speed = 500;
+//			int speed = 800 + 1023 * abs(fbbalerror) / 50;
+//			if(speed < 26) speed = 26;
+//			else if(speed > 1023) speed = 1023;
+//			printf("fberrror: %d   speed:%d,  is offset adjusting busy?: %d\n", fbbalerror, speed,
+//					get_offset_adjustment_time(15) || get_offset_adjustment_time(16));
+
+			//printf("error scaled: %d, error fitltered: %d\n", fbbalerrorscaled,  fbbalerrorscaled_filtered);
+
+			setJointOffsetSpeedById(13,  front_back_balance_adjustment_1, speed); // adjustment for the knees
+			setJointOffsetSpeedById(15,  front_back_balance_adjustment_2, speed);
+			setJointOffsetSpeedById(14, -front_back_balance_adjustment_1, speed); // adjustment for the knees
+			setJointOffsetSpeedById(16, -front_back_balance_adjustment_2, speed);
 
 
 			if (left_right_balance_adjustment_1 != 0) {
@@ -142,13 +193,13 @@ void balance()
 				//printf("offsets is: %d %d %d %d\n", get_offset(9), get_offset(10) ,get_offset(11), get_offset(11));
 			}
 			/* Balance left/right */
-			setJointOffsetSpeedById(9,  left_right_balance_adjustment_2, 1023);
-			setJointOffsetSpeedById(10, left_right_balance_adjustment_2, 1023);
-			setJointOffsetSpeedById(17, left_right_balance_adjustment_1, 1023);
-			setJointOffsetSpeedById(18, left_right_balance_adjustment_1, 1023);
+			setJointOffsetSpeedById(9,  left_right_balance_adjustment_2, speed);
+			setJointOffsetSpeedById(10, left_right_balance_adjustment_2, speed);
+			setJointOffsetSpeedById(17, left_right_balance_adjustment_1, speed);
+			setJointOffsetSpeedById(18, left_right_balance_adjustment_1, speed);
 
 		}
 
-		iteration++;
+		balance_iteration++;
 	}
 }

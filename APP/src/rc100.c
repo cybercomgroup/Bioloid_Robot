@@ -8,6 +8,7 @@
 
 #include "rc100.h"
 #include "typedefs.h"
+#include "printf.h"
 
 unsigned char gb_rcv_packet[6];
 unsigned char gb_rcv_packet_num;
@@ -78,6 +79,7 @@ int rc100_transmit( unsigned char *packet, int num_packets )
 }
 
 
+//
 int rc100_check(void) {
 	int rcv_num;
 	unsigned char checksum;
@@ -156,22 +158,28 @@ int rc100_check(void) {
 }
 
 /* This must always be run before reading the state! */
-void rc100_update() {
+bool rc100_update() {
 	if (rc100_check()) {
 		btn_state_old = btn_state_new;
 		btn_state_new = rc100_read_data();
+		if (btn_state_old != btn_state_new) {
+			return 1;
+		} else {
+			return 0;
+		}
 	}
+	return 0;
 }
 
 /* Returns the state of a given button this frame. See header file for button definitions. */
 button_state rc100_get_btn_change_state(button btn) {
 	if ((btn_state_old & btn) == (btn_state_new & btn)) {
 		return STATE_UNCHANGED;
-	} else if (btn_state_old & btn) {
-		return STATE_RELEASED;
+	} else if (btn_state_new & btn) {
+		return STATE_PRESSED;
 	}
 
-	return STATE_PRESSED;
+	return STATE_RELEASED;
 }
 
 button_state rc100_get_btn_state(button btn) {
