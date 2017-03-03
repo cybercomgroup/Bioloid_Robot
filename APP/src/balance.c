@@ -10,7 +10,9 @@
 #include "sensors.h"
 #include "printf.h"
 
-#define DEFAULT_ADJUSTMENT_TIME 200
+#define DEFAULT_ADJUSTMENT_TIME 50
+#define P_REGULATION 1
+#define D_REGULATION 1
 
 s16 fbbalerror;
 s16 rlbalerror;
@@ -38,7 +40,7 @@ void update_balance_error()
 	// negative error: we are falling rightwards
 	rlbalerror = gyro_get_y() - gyro_get_center_y();
 
-//	fbbalerror = 60; // FAKE ERROR!
+//	fbbalerror = -60; // FAKE ERROR!
 //	rlbalerror = 0;
 }
 
@@ -49,14 +51,55 @@ u16 constrain_balancing() {
 
 void scale_offsets()
 {
-	fbbalerrorscaled = fbbalerror * 3;
-	rlbalerrorscaled = rlbalerror * 3;
+	front_back_balance_adjustment_1 = 0;
+	front_back_balance_adjustment_2 = 0;
+	left_right_balance_adjustment_1 = 0;
+	left_right_balance_adjustment_2 = 0;
 
-	front_back_balance_adjustment_1 = fbbalerrorscaled / 54;
-	front_back_balance_adjustment_2 = fbbalerrorscaled / 18;
+	if(D_REGULATION) {
+		fbbalerrorscaled = fbbalerror*3;
+		rlbalerrorscaled = rlbalerror*3;
 
-	left_right_balance_adjustment_1 = rlbalerrorscaled / 20;
-	left_right_balance_adjustment_2 = rlbalerrorscaled / 40;
+		// limit FB output
+		const int fbLimit = 250;
+		fbbalerrorscaled = fbbalerrorscaled > fbLimit ? fbLimit : fbbalerrorscaled;
+		fbbalerrorscaled = fbbalerrorscaled < -fbLimit ? -fbLimit : fbbalerrorscaled;
+		// limit RL output
+		const int rlLimit = 300;
+		rlbalerrorscaled = rlbalerrorscaled > rlLimit ? rlLimit : rlbalerrorscaled;
+		rlbalerrorscaled = rlbalerrorscaled < -rlLimit ? -rlLimit : rlbalerrorscaled;
+
+		front_back_balance_adjustment_1 += fbbalerrorscaled / 60; // adjustment for the knees
+		front_back_balance_adjustment_2 += fbbalerrorscaled / 25;
+
+		left_right_balance_adjustment_1 += rlbalerrorscaled / 30;
+		left_right_balance_adjustment_2 += rlbalerrorscaled / 52;
+	}
+
+	if (P_REGULATION) {
+
+	}
+
+
+//	 adjustment for the knees
+	int delta_fb_knees = current_pose[12] - getCurrentGoalPose()[12]; // note 1 less than servo ID
+	if (abs(delta_fb_knees) > 25) {
+		if (delta_fb_knees < 0 && front_back_balance_adjustment_1 < 0) {
+			front_back_balance_adjustment_1 /= (-delta_fb_knees/2);
+		} else if (delta_fb_knees > 0 && front_back_balance_adjustment_1 > 0) {
+			front_back_balance_adjustment_1 /= (delta_fb_knees/2);
+		}
+	}
+
+//	// adjustment for the ankle fb
+	int delta_fb_ankleFB = current_pose[14] - getCurrentGoalPose()[14]; // note 1 less than servo ID
+	if (abs(delta_fb_ankleFB) > 25) {
+		if (delta_fb_ankleFB < 0 && front_back_balance_adjustment_2 < 0) {
+			front_back_balance_adjustment_2 /= -delta_fb_ankleFB;
+		} else if (delta_fb_ankleFB > 0 && front_back_balance_adjustment_2 > 0) {
+			front_back_balance_adjustment_2 /= delta_fb_ankleFB;
+		}
+	}
 }
 
 int iteration = 0;
@@ -70,39 +113,40 @@ void balance()
 		if(constrain_balancing()) {
 			scale_offsets();
 
-//			if (iteration % 100 == 0) {
-//				printf("fbbalerror: %d\n", fbbalerror);
-//				printf("rlbalerror: %d\n", rlbalerror);
+//			if (1) {
+//				printf("\nfbbalerror: %d\n", fbbalerror);
+////				printf("rlbalerror: %d\n", rlbalerror);
 //				printf("fbbalerrorscaled: %d\n", fbbalerrorscaled);
-//				printf("rlbalerrorscaled: %d\n", rlbalerrorscaled);
+////				printf("rlbalerrorscaled: %d\n", rlbalerrorscaled);
 //				printf("finalfbbal1: %d\n", front_back_balance_adjustment_1);
 //				printf("finalfbbal2: %d\n", front_back_balance_adjustment_2);
-//				printf("finalrlbal1: %d\n", left_right_balance_adjustment_1);
-//				printf("finalrlbal2: %d\n", left_right_balance_adjustment_2);
+////				printf("finalrlbal1: %d\n", left_right_balance_adjustment_1);
+////				printf("finalrlbal2: %d\n\n", left_right_balance_adjustment_2);
 //			}
 
-			if (fbbalerrorscaled < 50) {
-				if (front_back_balance_adjustment_1 != 0)
-					printf("adjusting %s: %d\n", front_back_balance_adjustment_1>0?"forewards":"backwards", fbbalerror);
-				/* Balance front/back */
-				setJointOffsetById(13,front_back_balance_adjustment_1);
-				setJointOffsetById(15,front_back_balance_adjustment_2);
-				setJointOffsetById(14,-front_back_balance_adjustment_1);
-				setJointOffsetById(16,-front_back_balance_adjustment_2);
-			} else {
-				printf("too much error fb: error scaled = %d\n", fbbalerrorscaled);
-			}
 
-			if (rlbalerrorscaled < 50) {
-				/* Balance left/right */
-				setJointOffsetById(9,left_right_balance_adjustment_2);
-				setJointOffsetById(10,left_right_balance_adjustment_2);
-				setJointOffsetById(17,left_right_balance_adjustment_1);
-				setJointOffsetById(18,left_right_balance_adjustment_1);
 
-			} else {
-				printf("too much error rl: error scaled = %d\n", rlbalerrorscaled);
+			if (front_back_balance_adjustment_2 != 0) {
+				//printf("adjusting %s: %d\n", front_back_balance_adjustment_2>0?"forewards":"backwards", fbbalerror);
+				//printf("offsets is: %d %d %d %d\n", get_offset(13), get_offset(15) ,get_offset(14), get_offset(16));
 			}
+			/* Balance front/back */
+			setJointOffsetSpeedById(13,  front_back_balance_adjustment_1, 1023); // adjustment for the knees
+			setJointOffsetSpeedById(15,  front_back_balance_adjustment_2, 1023);
+			setJointOffsetSpeedById(14, -front_back_balance_adjustment_1, 1023); // adjustment for the knees
+			setJointOffsetSpeedById(16, -front_back_balance_adjustment_2, 1023);
+
+
+			if (left_right_balance_adjustment_1 != 0) {
+				//printf("adjusting %s: %d\n", left_right_balance_adjustment_1>0?"rightwards":"leftwards", rlbalerror);
+				//printf("offsets is: %d %d %d %d\n", get_offset(9), get_offset(10) ,get_offset(11), get_offset(11));
+			}
+			/* Balance left/right */
+			setJointOffsetSpeedById(9,  left_right_balance_adjustment_2, 1023);
+			setJointOffsetSpeedById(10, left_right_balance_adjustment_2, 1023);
+			setJointOffsetSpeedById(17, left_right_balance_adjustment_1, 1023);
+			setJointOffsetSpeedById(18, left_right_balance_adjustment_1, 1023);
+
 		}
 
 		iteration++;

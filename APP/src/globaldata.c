@@ -75,6 +75,6 @@ volatile uint8 next_motion_page = 0;		// next motion page if we got new command
 volatile uint8 current_step = 0;			// number of the current motion page step
 
 // Input, Output and Setpoint variables for the PID controller (x and y-axis)
-volatile double pid_input[PID_DIMENSION] = { 0.0, 0.0 };
-volatile double pid_output[PID_DIMENSION] = { 0.0, 0.0 };
-volatile double pid_setpoint[PID_DIMENSION] = { 0.0, 0.0 };
+volatile long pid_input[PID_DIMENSION] = { 0, 0 };
+volatile long pid_output[PID_DIMENSION] = { 0, 0 };
+volatile long pid_setpoint[PID_DIMENSION] = { 0, 0 };

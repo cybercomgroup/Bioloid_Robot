@@ -43,6 +43,7 @@ u32 offset_timings[NUM_AX12_SERVOS];
 
 s16 offsets[NUM_AX12_SERVOS];
 s16 offsets_shadow[NUM_AX12_SERVOS];
+s16 offsets_speeds [NUM_AX12_SERVOS];
 
 u32 goal_time;
 
@@ -193,7 +194,7 @@ int moveToGoalPose(uint16 time, const uint16 goal[], uint8 wait_flag)
 {
 	//printf("setting goal pose, mode=%d\n", pose_mode);
 
-	if (pose_mode == POSE_MODE_DIRECT) {
+	if (pose_mode == POSE_MODE_DIRECT || wait_flag) {
 		int i;
 		int commStatus, errorStatus;
 
@@ -276,11 +277,22 @@ void resetJointOffsets(void) {
 
 void setJointOffsetById(u8 id, s16 offset)
 {
+	setJointOffsetSpeedById(id, offset, 1023);
+	//printf("setting offset of %d to %d\n", id, offset);
+}
+
+void setJointOffsetSpeedById(u8 id, s16 offset, u16 speed)
+{
 	if (id == 0 || id > NUM_AX12_SERVOS) {
 		printf("setJointOffsetById: invalid servo id, did you perhaps send the index?\n");
 	}
 	offsets[id-1] = offset;
+	offsets_speeds[id-1] = speed;
 	//printf("setting offset of %d to %d\n", id, offset);
+}
+
+s16 get_offset(int id) {
+	return offsets[id-1];
 }
 
 
@@ -324,7 +336,9 @@ void apply_new_pose_and_offsets()
 			s16 old_offset = offsets_shadow[i];
 			offsets_shadow[i] = offsets[i];
 
-			u32 est_time = (uint16) ( ((uint32) 848 * 1000 * abs(offsets[i])) / 1023 );
+			int speed = offsets_speeds[i];
+
+			u32 est_time = (uint16) ( ((uint32) 848 * 1000 * abs(offsets[i])) / speed );
 			//printf("est_time %d\n", est_time);
 			offset_timings[i] = now + est_time;
 
@@ -337,7 +351,7 @@ void apply_new_pose_and_offsets()
 
 			//printf("current pose + offset: %d\n", goal_tmp);
 
-			goal_speeds_changed[num_changed] = 1023; // full speed ahead!
+			goal_speeds_changed[num_changed] = speed; // full speed ahead!
 			goal_pose_changed[num_changed] = goal_tmp;
 			ids_changed[num_changed] = i+1;
 			num_changed++;

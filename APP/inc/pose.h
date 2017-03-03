@@ -79,9 +79,12 @@ void moveToDefaultPose(void);
 
 void resetJointOffsets(void);
 
+s16 get_offset(int id);
+
 void set_pose_mode(POSE_MODE mode);
 
-void setJointOffsetById(u8 id, int16 offset);
+void setJointOffsetById(u8 id, s16 offset);
+void setJointOffsetSpeedById(u8 id, s16 offset, u16 speed);
 
 uint16 * getCurrentGoalPose();
 

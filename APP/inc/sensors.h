@@ -40,8 +40,8 @@
 word read_ir_right(void);
 word read_ir_left(void);
 
-word gyro_get_pitch();
-word gyro_get_roll();
+s32 gyro_get_pitch();
+s32 gyro_get_roll();
 
 void gyro_update();
 void gyro_read();

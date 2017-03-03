@@ -58,6 +58,7 @@ bool do_balance = 1;
 
 uint16 pose[NUM_AX12_SERVOS] = {235,788,279,744,462,561,358,666,507,516,341,682,240,783,647,376,507,516};
 uint16 speeds[NUM_AX12_SERVOS];
+int16 last_pose[NUM_AX12_SERVOS];
 
 //TODO: Most of these functions probably belong in another class.
 
@@ -201,8 +202,10 @@ int controller_read_input(void) {
 		startMotionIfIdle(MOTION_STAND);
 	}
 	else if (rc100_get_btn_change_state(RC100_BTN_2) == STATE_PRESSED) {
-		printf("Grabbing and lifting.\n");
-		startMotionIfIdle(MOTION_GRAB);
+		printf("resetting gyro.\n");
+		//startMotionIfIdle(MOTION_GRAB);
+		gyro_calibrate();
+		reset_pitch_roll();
 	}
 	else if (rc100_get_btn_change_state(RC100_BTN_3) == STATE_PRESSED) {
 		printf("Sitting down.\n");
@@ -428,10 +431,20 @@ void mainLoop() {
 		/* Read gyro sensors? */
 		gyro_update();
 		gyro_calibrate_incremental();
-		//if (iteration %100 == 0) printf("Gyro values: x=%d, y=%d, center x=%d, center y=%d\n", gyro_get_x(), gyro_get_y(), gyro_get_center_x(), gyro_get_center_y());
+		if (iteration %500 == 0) {
+			printf("Gyro values: x=%d, y=%d, center x=%d, center y=%d, pitch=%d, roll=%d\n",
+					gyro_get_x(), gyro_get_y(), gyro_get_center_x(), gyro_get_center_y(), gyro_get_pitch(), gyro_get_roll());
+//
+//			printf("delta in servo 13: %d, balance value is: %d\n", current_pose[12] - last_pose[12], (uint16)gyro_get_x() - (uint16)gyro_get_center_x());
+//			printf("delta in servo 14: %d, balance value is: %d\n", current_pose[13] - last_pose[13], (uint16)gyro_get_x() - (uint16)gyro_get_center_x());
+//			printf("delta in servo 15: %d, balance value is: %d\n", current_pose[14] - last_pose[14], (uint16)gyro_get_x() - (uint16)gyro_get_center_x());
+//			printf("delta in servo 16: %d, balance value is: %d\n", current_pose[15] - last_pose[15], (uint16)gyro_get_x() - (uint16)gyro_get_center_x());
+		}
 
-		if (do_balance)
+		if (do_balance) {
+			if (walk_getWalkState() != 0 || checkMotionFinished())
 			balance();
+		}
 
 		evaluate_current_command();
 
@@ -444,8 +457,11 @@ void mainLoop() {
 // Update current servo positions.
 // To save time:
 // 		Check only servos that are expected to have moved.
+
+
 void update_servo_positions() {
 	for(int i=0; i<NUM_AX12_SERVOS; i++) {
+		last_pose[i] = current_pose[i];
 		current_pose[i] = dxl_read_word( i+1, DXL_PRESENT_POSITION_L );
 	}
 }

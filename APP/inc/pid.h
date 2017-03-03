@@ -33,9 +33,9 @@
 #define REVERSE			1
 #define OUTPUT_LIMIT	153*INT_SCALE_FACTOR		// corresponds to 45deg servo offset
 #define SAMPLE_INTERVAL	100		// in ms
-#define DEFAULT_KP		1.0*INT_SCALE_FACTOR		// determine these through tuning
-#define DEFAULT_KI		1.0*INT_SCALE_FACTOR		//
-#define DEFAULT_KD		0.01*INT_SCALE_FACTOR	//
+#define DEFAULT_KP		INT_SCALE_FACTOR		// determine these through tuning
+#define DEFAULT_KI		INT_SCALE_FACTOR		//
+#define DEFAULT_KD		INT_SCALE_FACTOR / 100	//
 
 // Initialization of the PID controller
 // Input  (int) dimension - number of PID channels (default is 2 - x and y axis)

@@ -18,23 +18,37 @@ word adc_gyro_y = 0;
 word adc_gyro_center_x;
 word adc_gyro_center_y;
 
-word gyro_pitch = 0;
-word gyro_roll = 0;
+s32 gyro_pitch = 0;
+s32 gyro_roll = 0;
+
+u32 gyro_last_update;
 
 void gyro_update() {
 	gyro_read();
 
+	u32 t = micros();
+	u32 dt = t - gyro_last_update;
+	gyro_last_update = t;
+
 	//printf("GYro update: %d, %d", adc_gyro_x, adc_gyro_y);
 
-	gyro_pitch += adc_gyro_x - adc_gyro_center_x;
-	gyro_roll += adc_gyro_y - adc_gyro_center_y;
+	int delta_p = (adc_gyro_x - (s16)adc_gyro_center_x) * dt / 1000;
+	int delta_r = (adc_gyro_y  - (s16)adc_gyro_center_y) * dt / 1000;
+//	printf("delta_p=%d, delta_r=%d\n", delta_p, delta_r);
+	gyro_pitch += delta_p;
+	gyro_roll += delta_r;
 }
 
-word gyro_get_pitch()
+void reset_pitch_roll() {
+	gyro_pitch = 0;
+	gyro_roll = 0;
+}
+
+s32 gyro_get_pitch()
 {
 	return gyro_pitch;
 }
-word gyro_get_roll()
+s32 gyro_get_roll()
 {
 	return gyro_roll;
 }
@@ -49,6 +63,8 @@ void gyro_init() {
 
 void gyro_calibrate() {
 	const int samples = 10;
+	adc_gyro_center_x = 0;
+	adc_gyro_center_y = 0;
 	for (int i = 0; i < samples; i++)
 	{
 		mDelay(50);
