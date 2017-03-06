@@ -21,8 +21,9 @@
  */
 
 #include "pid.h"
-#import "time.h"
+#include "time.h"
 #include "typedefs.h"
+#include "printf.h"
 
 // we assume that x and y axis use the same tuning parameters
 // since gyro and actuators are the same
@@ -59,12 +60,12 @@ void pid_set_input(int channel, int value) {
 	pid_input[channel] = value;
 }
 
-int pid_get_output(int channel) {
+long pid_get_output(int channel) {
 	if (channel > PID_DIMENSION) while(1);
 	return pid_output[channel];
 }
 
-int pid_get_output_unscaled(int channel) {
+long pid_get_output_unscaled(int channel) {
 	if (channel > PID_DIMENSION) while(1);
 	return pid_unscaled_output[channel];
 }

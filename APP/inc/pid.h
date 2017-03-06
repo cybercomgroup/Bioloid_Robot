@@ -75,8 +75,8 @@ void pid_setTunings(int Kp, int Ki, int Kd);
 void pid_setControllerDirection(int direction);
 
 void pid_set_input(int channel, int value);
-int pid_get_output(int channel);
-int pid_get_output_unscaled(int channel);
+long pid_get_output(int channel);
+long pid_get_output_unscaled(int channel);
 
 //Display functions ****************************************************************
 int pid_getKp();			// These functions query the pid for internal values.
