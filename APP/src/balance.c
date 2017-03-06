@@ -9,6 +9,7 @@
 #include "pose.h"
 #include "sensors.h"
 #include "printf.h"
+#include "pid.h"
 
 #define DEFAULT_ADJUSTMENT_TIME 30
 #define P_REGULATION 1
@@ -45,11 +46,20 @@ void update_balance_error()
 
 	// positive error: we are falling backwards
 	// negative error: we are falling forewards
-	fbbalerror = gyro_get_x() - gyro_get_center_x();
+	//fbbalerror = gyro_get_x() - gyro_get_center_x();
+
+	pid_set_input(PID_CHANNEL_X, gyro_get_x() - gyro_get_center_x());
 
 	// positive error: we are falling leftwards
 	// negative error: we are falling rightwards
-	rlbalerror = gyro_get_y() - gyro_get_center_y();
+	//rlbalerror = gyro_get_y() - gyro_get_center_y();
+	pid_set_input(PID_CHANNEL_Y, gyro_get_y() - gyro_get_center_y());
+
+
+	pid_compute();
+
+	fbbalerror = pid_get_output_unscaled(PID_CHANNEL_X);
+	rlbalerror = pid_get_output_unscaled(PID_CHANNEL_Y);
 
 //	fbbalerror = -60; // FAKE ERROR!
 //	rlbalerror = 0;

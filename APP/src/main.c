@@ -11,6 +11,7 @@
 #include "motion_f.h"
 #include "walk.h"
 #include "balance.h"
+#include "pid.h"
 
 //TODO: Move this stuff to a suitable header file:
 /* --- */
@@ -265,6 +266,10 @@ int main(void)
 	Timer_Configuration();
 
 	gyro_init(); // power on the gyro as soon as possible, as it takes some time for it to stabilize drift, etc.
+
+	pid_init();
+
+	pid_setMode(AUTOMATIC);
 
 	/* Enable ZigBee receiver for rc100 controller */
 	USART_Configuration(USART_ZIGBEE, 57600);

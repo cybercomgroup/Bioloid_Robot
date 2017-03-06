@@ -20,7 +20,6 @@
  *   http://creativecommons.org/licenses/by-sa/3.0/
  */
 
-#include <stdio.h>
 #include "pid.h"
 #import "time.h"
 #include "typedefs.h"
@@ -54,6 +53,22 @@ bool inAuto;						// automatic or manual mode
  *    The parameters specified here are those for for which we can't set up
  *    reliable defaults, so we need to have the user set them.
  ***************************************************************************/
+
+void pid_set_input(int channel, int value) {
+	if (channel > PID_DIMENSION) return;
+	pid_input[channel] = value;
+}
+
+int pid_get_output(int channel) {
+	if (channel > PID_DIMENSION) while(1);
+	return pid_output[channel];
+}
+
+int pid_get_output_unscaled(int channel) {
+	if (channel > PID_DIMENSION) while(1);
+	return pid_unscaled_output[channel];
+}
+
 void pid_init()
 {
 	// initialize the input, output and setpoint arrays

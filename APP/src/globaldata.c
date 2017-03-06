@@ -78,3 +78,4 @@ volatile uint8 current_step = 0;			// number of the current motion page step
 volatile long pid_input[PID_DIMENSION] = { 0, 0 };
 volatile long pid_output[PID_DIMENSION] = { 0, 0 };
 volatile long pid_setpoint[PID_DIMENSION] = { 0, 0 };
+volatile long pid_unscaled_output[PID_DIMENSION] = { 0, 0 };

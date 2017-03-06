@@ -25,6 +25,9 @@
 
 #define PID_DIMENSION			2
 
+#define PID_CHANNEL_X			0
+#define PID_CHANNEL_Y			1
+
 //Constants used in some of the functions below
 #define INT_SCALE_FACTOR 1000
 #define AUTOMATIC		1
@@ -70,6 +73,10 @@ void pid_setTunings(int Kp, int Ki, int Kd);
 // REVERSE - means the opposite.  it's very unlikely that this will be needed
 // once it is set in the constructor.
 void pid_setControllerDirection(int direction);
+
+void pid_set_input(int channel, int value);
+int pid_get_output(int channel);
+int pid_get_output_unscaled(int channel);
 
 //Display functions ****************************************************************
 int pid_getKp();			// These functions query the pid for internal values.
