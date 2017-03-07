@@ -10,6 +10,7 @@
 #include "sensors.h"
 #include "printf.h"
 #include "pid.h"
+#include "filters.h"
 
 #define DEFAULT_ADJUSTMENT_TIME 30
 #define P_REGULATION 1
@@ -29,7 +30,7 @@ s16 front_back_balance_adjustment_2;
 s16 left_right_balance_adjustment_1;
 s16 left_right_balance_adjustment_2;
 
-u16 last_update;
+u32 last_update;
 
 int balance_iteration = 0;
 
@@ -70,19 +71,6 @@ u16 constrain_balancing() {
 	return 1;
 }
 
-int lowPassFrequency(const int* input, /*int* output,*/ int dt, int points, int cutoff)
-{
-    long RC = (1000/cutoff) / 6;
-    //output[0] = input[0];
-    int output = input[0];
-    for(int i = 1; i < points; ++i)
-    {
-    	output = output + ((input[i] - output) * dt / (RC+dt));
-    }
-    return output;
-}
-
-
 void scale_offsets()
 {
 	front_back_balance_adjustment_1 = 0;
@@ -102,7 +90,7 @@ void scale_offsets()
 			fb_scaled_values[N_SAMPLES-1] = fbbalerrorscaled;
 
 			//fbbalerrorscaled_filtered = lowPassFrequency(fb_scaled_values, dt, N_SAMPLES, 5);
-			fbbalerrorscaled = lowPassFrequency(fb_scaled_values, dt, N_SAMPLES, CUTOFF);
+			fbbalerrorscaled = lowPass(fb_scaled_values, dt, N_SAMPLES, CUTOFF);
 
 		}
 
