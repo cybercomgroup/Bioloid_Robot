@@ -95,20 +95,20 @@ int controller_read_input(void) {
 			// Stop walking forward
 			printf("Walking forward stop. btn state=%d\n", rc100_get_btn_state(RC100_BTN_U));
 			bioloid_command = COMMAND_STOP;
-			new_command = 1;
+			//new_command = 1;
 		}
 
 		else if (rc100_get_btn_change_state(RC100_BTN_D) == STATE_PRESSED) {
 			// Start walking backward
 			printf("Walking backward.\n");
-			startMotionIfIdle(32);
+			startMotionIfIdle(45);
 			bioloid_command = COMMAND_WALK_BACKWARD;
 		}
 		else if (rc100_get_btn_change_state(RC100_BTN_D) == STATE_RELEASED) {
 			// Stop walking backward
 			printf("Walking backward stop.\n");
 			bioloid_command = COMMAND_STOP;
-			new_command = 1;
+			//new_command = 1;
 		}
 
 		if (rc100_get_btn_change_state(RC100_BTN_L) == STATE_PRESSED) {
