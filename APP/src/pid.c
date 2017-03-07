@@ -97,11 +97,9 @@ void pid_init()
 
 
 /* Compute() **********************************************************************
- *   This, as they say, is where the magic happens.  this function should be called
- *   every time "void loop()" executes.  the function will decide for itself whether
- *   a new pid Output needs to be computed
+ *   This, as they say, is where the magic happens.
  **********************************************************************************/
-int	pid_compute()
+int	pid_compute(unsigned long timeChange)
 {
 	int input, error, dInput, output;
 
@@ -110,57 +108,55 @@ int	pid_compute()
 		return 0;
 	}
 
-	// check if we are due for a calculation
-	unsigned long now = millis();
-	int timeChange = (now - last_time);
+	int SampleTimeInSec = (timeChange * INT_SCALE_FACTOR)/1000;
+	int kp_sample = kp;
+	int ki_sample = ki * SampleTimeInSec / INT_SCALE_FACTOR;
+	int kd_sample = kd * INT_SCALE_FACTOR / SampleTimeInSec;
 
-	if ( timeChange >= sample_time )
+	for (uint8 i=0; i<PID_DIMENSION; i++)
 	{
-		for (uint8 i=0; i<PID_DIMENSION; i++)
-		{
-			// Compute all the working error variables
-			input = pid_input[i];
-			error = pid_setpoint[i] - input;
+		// Compute all the working error variables
+		input = pid_input[i] * INT_SCALE_FACTOR;
+		error = pid_setpoint[i] * INT_SCALE_FACTOR - input;
 
-			// debug
-			printf("input: %d, setpoint: %d, error: %d", input, pid_setpoint[0], error);
+		// debug
+//		printf("input: %d, setpoint: %d, error: %d\n", input, pid_setpoint[0], error);
 
-			integral_term[i] += (ki * error)/INT_SCALE_FACTOR;
+		integral_term[i] /= 2;
+		integral_term[i] += (ki_sample * error)/INT_SCALE_FACTOR;
 
-			// keep the integral term within limits
-			if (integral_term[i] > outMax) {
-				integral_term[i] = outMax;
-			} else if (integral_term[i] < outMin) {
-				integral_term[i] = outMin;
-			}
+		//printf("KI: %d, i: %d, dt: %d\n", ki_sample, integral_term[i], timeChange);
 
-			dInput = (input - last_input[i]);
-
-			// Compute PID Output
-			output = kp * error/INT_SCALE_FACTOR + integral_term[i] - kd * dInput/INT_SCALE_FACTOR;
-
-			// TEST:
-			//printf("\nCh: %i, PID input=%i, last=%i, output=%i, ", i, (int16)pid_input[i], (int16)last_input[i], (int16)output);
-			//printf(" Err=%i, dI=%i, Int=%i", (int16)error, (int16)dInput, (int16)integral_term[i]);
-
-			// apply output limits
-			if (output > outMax) {
-				output = outMax;
-			} else if (output < outMin) {
-				output = outMin;
-			}
-			pid_output[i] = output;
-			pid_unscaled_output[i] = output/INT_SCALE_FACTOR;
-
-			// Remember some variables for next time
-			last_input[i] = input;
+		// keep the integral term within limits
+		if (integral_term[i] > outMax) {
+			integral_term[i] = outMax;
+		} else if (integral_term[i] < outMin) {
+			integral_term[i] = outMin;
 		}
 
-		last_time = now;
-		return 1;
-	} else {
-		return 0;
+		dInput = (input - last_input[i]);
+
+		// Compute PID Output
+		output = kp_sample * error/INT_SCALE_FACTOR + integral_term[i] - kd_sample * dInput/INT_SCALE_FACTOR;
+
+		// TEST:
+//		printf("\nCh: %i, PID input=%i, last=%i, output=%i, ", i, (int16)pid_input[i], (int16)last_input[i], (int16)output);
+//		printf(" Err=%i, dI=%i, Int=%i\n", (int16)error, (int16)dInput, (int16)integral_term[i]);
+
+		// apply output limits
+		if (output > outMax) {
+			output = outMax;
+		} else if (output < outMin) {
+			output = outMin;
+		}
+		pid_output[i] = output;
+		pid_unscaled_output[i] = output/INT_SCALE_FACTOR;
+
+		// Remember some variables for next time
+		last_input[i] = input;
 	}
+
+	return 1;
 }
 
 
@@ -180,10 +176,9 @@ void pid_setTunings(int Kp, int Ki, int Kd)
 	dispKd = Kd;
 
 	// need to convert ms to s for calculations
-	int SampleTimeInSec = (sample_time * INT_SCALE_FACTOR)/1000;
 	kp = Kp;
-	ki = Ki * SampleTimeInSec / INT_SCALE_FACTOR;
-	kd = Kd * INT_SCALE_FACTOR / SampleTimeInSec;
+	ki = Ki;
+	kd = Kd;
 
 	if ( controller_direction == REVERSE )
 	{

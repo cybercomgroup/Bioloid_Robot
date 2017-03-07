@@ -47,20 +47,11 @@ void update_balance_error()
 
 	// positive error: we are falling backwards
 	// negative error: we are falling forewards
-	//fbbalerror = gyro_get_x() - gyro_get_center_x();
-
-	pid_set_input(PID_CHANNEL_X, gyro_get_x() - gyro_get_center_x());
+	fbbalerror = gyro_get_x() - gyro_get_center_x();
 
 	// positive error: we are falling leftwards
 	// negative error: we are falling rightwards
-	//rlbalerror = gyro_get_y() - gyro_get_center_y();
-	pid_set_input(PID_CHANNEL_Y, gyro_get_y() - gyro_get_center_y());
-
-
-	pid_compute();
-
-	fbbalerror = pid_get_output_unscaled(PID_CHANNEL_X);
-	rlbalerror = pid_get_output_unscaled(PID_CHANNEL_Y);
+	rlbalerror = gyro_get_y() - gyro_get_center_y();
 
 //	fbbalerror = -60; // FAKE ERROR!
 //	rlbalerror = 0;
@@ -77,6 +68,17 @@ void scale_offsets()
 	front_back_balance_adjustment_2 = 0;
 	left_right_balance_adjustment_1 = 0;
 	left_right_balance_adjustment_2 = 0;
+
+	pid_set_input(PID_CHANNEL_X, fbbalerror);
+	pid_set_input(PID_CHANNEL_Y, rlbalerror);
+	pid_compute(dt);
+
+
+
+	fbbalerror = -pid_get_output_unscaled(PID_CHANNEL_X);
+	rlbalerror = -pid_get_output_unscaled(PID_CHANNEL_Y);
+
+//	printf("err: %d\n", fbbalerror);
 
 	if(D_REGULATION) {
 		fbbalerrorscaled = fbbalerror*3;

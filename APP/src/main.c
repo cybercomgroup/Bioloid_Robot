@@ -268,7 +268,10 @@ int main(void)
 	gyro_init(); // power on the gyro as soon as possible, as it takes some time for it to stabilize drift, etc.
 
 	pid_init();
-
+	int Kp = 1000;
+	int Ki = 0;
+	int Kd = 0;
+	pid_setTunings(Kp, Ki, Kd);
 	pid_setMode(AUTOMATIC);
 
 	/* Enable ZigBee receiver for rc100 controller */
