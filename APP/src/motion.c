@@ -443,14 +443,20 @@ uint8 executeMotionSequence()
 		// check if we just finished an exit page
 		if ( exit_flag == 1 )
 		{
-			// yes, reset flag and change motion state and then return to not complicate things
-			exit_flag = 0;
-			motion_state = MOTION_STOPPED;
-			return motion_state;
+			if ( CurrentMotion.ExitPage != 0 ) {
+				// go to next exit page, then check again.
+				//printf("Going to exit page (from exit page): %d\n", CurrentMotion.ExitPage);
+				current_motion_page = CurrentMotion.ExitPage;
+			} else {
+				// yes, reset flag and change motion state and then return to not complicate things
+				exit_flag = 0;
+				motion_state = MOTION_STOPPED;
+				return motion_state;
+			}
 		}
 		
 		// we have finished the current page - determine the next motion page
-		if ( bioloid_command == COMMAND_STOP )
+		else if ( bioloid_command == COMMAND_STOP )
 		{
 		// Option 1 - switch to exit page
 			if ( CurrentMotion.ExitPage == 0 ) {
@@ -459,6 +465,7 @@ uint8 executeMotionSequence()
 				return motion_state;
 			} else {
 				// need to execute an Exit Page before stopping		
+				//printf("Going to exit page: %d\n", CurrentMotion.ExitPage);
 				current_motion_page = CurrentMotion.ExitPage;
 				exit_flag = 1;		// flag that we need to stop after the exit page
 			}
