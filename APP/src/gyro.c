@@ -130,22 +130,22 @@ void gyro_read() {
 
 }
 
-word gyro_get_x()
+s16 gyro_get_x()
 {
 	return adc_gyro_x;
 }
 
-word gyro_get_y()
+s16 gyro_get_y()
 {
 	return adc_gyro_y;
 }
 
-word gyro_get_center_x()
+s16 gyro_get_center_x()
 {
 	return adc_gyro_center_x;
 }
 
-word gyro_get_center_y()
+s16 gyro_get_center_y()
 {
 	return adc_gyro_center_y;
 }

@@ -47,9 +47,9 @@ void gyro_update();
 void gyro_read();
 void gyro_init();
 void gyro_calibrate();
-word gyro_get_x();
-word gyro_get_y();
-word gyro_get_center_x();
-word gyro_get_center_y();
+s16 gyro_get_x();
+s16 gyro_get_y();
+s16 gyro_get_center_x();
+s16 gyro_get_center_y();
 
 #endif
