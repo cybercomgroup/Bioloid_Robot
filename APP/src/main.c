@@ -13,9 +13,14 @@
 #include "balance.h"
 #include "pid.h"
 
-//TODO: Move this stuff to a suitable header file:
-/* --- */
+
+// For grab and lift: compare with IR sensor values, lift when IR value is more than this
 #define MAX_OBSTACLE_DISTANCE 200
+
+// Set to 1 to disable all printf functions.
+#define NO_PRINTF 0
+
+#define RECORD_DATA_MODE 0
 
 
 typedef enum {
@@ -29,30 +34,38 @@ typedef enum {
 	CMD_WAVE 			= 7
 } command;
 
-/* --- */
-
-/* Global variables */
 
 // Button related variables
 volatile command current_command = CMD_WALK_AND_GRAB;
 
+/* External vars for the motion state machine state */
 extern volatile bool new_command;             // current command
 extern volatile uint8 bioloid_command;                // current command
 extern volatile uint8 last_bioloid_command;   // last command
+extern volatile uint8 current_motion_page;   // last command
+extern volatile uint8 current_step;
 
-uint32 last_interpret_input_millis = -1; // dummy value to check at first iteration.
+/* Motion and gyro values recording stuff (used when RECORD_DATA_MODE==1) */
+u32 save_values_time[2*1024];
+s16 save_values_current_motion_page[2*1024];
+s16 save_values_current_motion_step[2*1024];
+s16 save_values[2*1024];
+s16 save_valuesy[2*1024];
+int do_save_vals = 0;
+int save_i = 0;
 
 
-void _serial_putc(void*, char); // put a char in serial console
+void _serial_putc(void*, char); // put a char in serial console, used in printf function
+
 
 int lean_left_right(s16 amount);
 #define lean_left( amount) lean_left_right( amount)
 #define lean_right( amount) lean_left_right( -amount)
 
 bool demo_walk_and_grab = 0;
-bool do_balance = 1;
+bool do_balance = 0;
 
-int16 last_pose[NUM_AX12_SERVOS];
+int16 last_pose[NUM_AX12_SERVOS]; // the saved pose from the last main loop iteration
 
 //TODO: Most of these functions probably belong in another class.
 
@@ -122,6 +135,12 @@ int controller_read_input(void) {
 		}
 		else if (rc100_get_btn_change_state(RC100_BTN_R) == STATE_RELEASED) {
 			printf("Right released.\n");
+
+#if RECORD_DATA_MODE
+			printf("Startign saving values!\n");
+			do_save_vals = 1;
+			save_i = 0;
+#endif
 		}
 
 
@@ -151,85 +170,13 @@ int controller_read_input(void) {
 		}
 
 		if (rc100_get_btn_change_state(RC100_BTN_5) == STATE_PRESSED) {
-			printf("Leaning right.\n");
-			//lean_left(10);
-			lean_left_right(10);
+			startMotionIfIdle(227);
 		}
 		else if (rc100_get_btn_change_state(RC100_BTN_6) == STATE_PRESSED) {
-			printf("Leaning left.\n");
-			lean_right(10);
 		}
-	//	if (rc100_get_btn_state(RC100_BTN_5)) {
-	//		lean_right(10);
-	//	} else if (rc100_get_btn_state(RC100_BTN_6)) {
-	//		lean_left(10);
-	//	} else {
-	//		lean_left(0);
-	//	}
-
 	}
 	return 0;
 }
-
-//void update_walk(void) {
-//	/* Here we need to do the following:
-//	 *
-//	 * 1: Check if the motors are at their goal position.
-//	 * 2: If not, do nothing. Else, find the next motion page
-//	 *	  in our current walk sequence (forward or backward).
-//	 */
-//}
-//
-//void evaluate_current_command(void) {
-//	switch(current_command) {
-//	case CMD_STOP:
-//		break;
-//	case CMD_WALK_FORWARD:
-//		update_walk();
-//		break;
-//	case CMD_WALK_BACKWARD:
-//		update_walk();
-//		break;
-//	case CMD_WALK_AND_GRAB:
-//		break;
-//	case CMD_GRAB:
-//		break;
-//	case CMD_TURN_LEFT:
-//		break;
-//	case CMD_TURN_RIGHT:
-//		break;
-//	case CMD_WAVE:
-//		break;
-//	}
-//}
-
-//void issue_command(command cmd) {
-//	/* Set motion page etc.
-//	 * We also most likely want to return to the
-//	 * default pose before starting a new one! */
-//	switch(cmd) {
-//	case CMD_STOP:
-//		break;
-//	case CMD_WALK_FORWARD:
-//		update_walk();
-//		break;
-//	case CMD_WALK_BACKWARD:
-//		update_walk();
-//		break;
-//	case CMD_WALK_AND_GRAB:
-//		break;
-//	case CMD_GRAB:
-//		startMotionIfIdle(MOTION_GRAB);
-//		break;
-//	case CMD_TURN_LEFT:
-//		break;
-//	case CMD_TURN_RIGHT:
-//		break;
-//	case CMD_WAVE:
-//		break;
-//	}
-//	current_command = cmd;
-//}
 
 void mainLoop();
 void update_servo_positions();
@@ -245,7 +192,7 @@ void test_load_motions();
 
 int main(void)
 {
-	int res, exit = 0, i;
+	int res, i;
 
 	/* Initialization */
 
@@ -267,6 +214,7 @@ int main(void)
 
 	gyro_init(); // power on the gyro as soon as possible, as it takes some time for it to stabilize drift, etc.
 
+	// We dont actually use the pid for anything.
 	pid_init();
 	int Kp = 1000;
 	int Ki = 0;
@@ -335,7 +283,9 @@ void check_feet() {
 	word ir_left, ir_right;
 	/* Read data from sensors */
 	ir_left = read_ir_left();
-	ir_right = read_ir_right();
+	//ir_right = read_ir_right(); // broken hardware?? Was working before, but suddenly right IR returned funky values.
+	ir_right = 0;
+
 	//printf("ir left: %d, right: %d\n", ir_left, ir_right);
 	//delay_ms(500); // delay so that we dont go as fast as possible.
 	/* Note that higher IR readings = closer! */
@@ -345,7 +295,7 @@ void check_feet() {
 			/* Try to blindly pick up whatever is in front of you. */
 //			issue_command(CMD_GRAB);
 		if (walk_getWalkState() != 0 || checkMotionFinished()) {
-			printf("Object detected! Lifting and grabbing!\n");
+			printf("Object detected left %d right %d limit %d !Lifting and grabbing!\n", ir_left, ir_right, MAX_OBSTACLE_DISTANCE);
 			setNewMotionCommand(MOTION_GRAB);
 		}
 
@@ -359,16 +309,14 @@ void check_feet() {
 void mainLoop() {
 	int ir_left, ir_right;
 	set_pose_mode(POSE_MODE_SYNC);
-	int iteration = 0;
 	int frame_time = 0;
 	u32 start_frame_micros = micros();
-	while(1) {
-		iteration++;
+	for (int iteration = 0;;iteration++) {
 
 		frame_time = micros() - start_frame_micros;
 		start_frame_micros = start_frame_micros + frame_time;
 
-		if (iteration % 1000 == 0) printf("last frame_time is: %d\n", frame_time);
+//		if (iteration % 1000 == 0) printf("last frame_time is: %d\n", frame_time);
 
 		update_servo_positions();
 
@@ -383,10 +331,19 @@ void mainLoop() {
 
 		/* Read gyro sensors? */
 		gyro_update();
+		//gyro_adjust_for_drift();
+
+		/* Print gyro readings with timestamp, for debugging */
+		//printf("%d %d %d\n", millis(), gyro_get_x(), gyro_get_y());
+
+#if RECORD_DATA_MODE
+		record_or_transmit_data();
+#endif
+
 		gyro_calibrate_incremental();
 		if (iteration %500 == 0) {
-			printf("Gyro values: x=%d, y=%d, center x=%d, center y=%d, pitch=%d, roll=%d\n",
-					gyro_get_x(), gyro_get_y(), gyro_get_center_x(), gyro_get_center_y(), gyro_get_pitch(), gyro_get_roll());
+//			printf("Gyro values: x=%d, y=%d, center x=%d, center y=%d, pitch=%d, roll=%d\n",
+//					gyro_get_x(), gyro_get_y(), gyro_get_center_x(), gyro_get_center_y(), gyro_get_pitch(), gyro_get_roll());
 //
 //			printf("delta in servo 13: %d, balance value is: %d\n", current_pose[12] - last_pose[12], (uint16)gyro_get_x() - (uint16)gyro_get_center_x());
 //			printf("delta in servo 14: %d, balance value is: %d\n", current_pose[13] - last_pose[13], (uint16)gyro_get_x() - (uint16)gyro_get_center_x());
@@ -395,11 +352,9 @@ void mainLoop() {
 		}
 
 		if (do_balance) {
-			if (walk_getWalkState() != 0 || checkMotionFinished())
+			if (walk_getWalkState() != 0 || checkMotionFinished()) // only apply balance when walking or idle, other motions not supported yet
 				balance();
 		}
-
-//		evaluate_current_command();
 
 		executeMotionSequence(); // update the current motion state (use startMotionIfIdle to start a new motion)
 
@@ -407,16 +362,28 @@ void mainLoop() {
 	}
 }
 
+int _servo_update_iteration;
 // Update current servo positions.
 // To save time:
 // 		Check only servos that are expected to have moved.
-
-
 void update_servo_positions() {
-	for(int i=0; i<NUM_AX12_SERVOS; i++) {
-		last_pose[i] = current_pose[i];
-		current_pose[i] = dxl_read_word( i+1, DXL_PRESENT_POSITION_L );
+	if (!_servo_update_iteration)
+	{
+		// update half of servos
+		for(int i=0; i<NUM_AX12_SERVOS/2; i++) {
+			last_pose[i] = current_pose[i];
+			current_pose[i] = dxl_read_word( i+1, DXL_PRESENT_POSITION_L );
+		}
 	}
+	else
+	{
+		// update otehr half of servos
+		for(int i=NUM_AX12_SERVOS/2; i<NUM_AX12_SERVOS; i++) {
+			last_pose[i] = current_pose[i];
+			current_pose[i] = dxl_read_word( i+1, DXL_PRESENT_POSITION_L );
+		}
+	}
+	_servo_update_iteration = !_servo_update_iteration;
 }
 
 void balance_left_right() {
@@ -445,23 +412,38 @@ void balance_left_right() {
 	}
 }
 
+void record_or_transmit_data() {
+	if (do_save_vals && save_i < 1024*2) {
+		// save interesting values (timestamp, current motion, gyro values...)
+		save_values_time[save_i] = millis();
+		save_values_current_motion_page[save_i] = current_motion_page;
+		save_values_current_motion_step[save_i] = current_step;
+		save_values[save_i] = gyro_get_x();
+		save_valuesy[save_i] = gyro_get_y();
+		save_i++;
+	}
+
+	if (do_save_vals > 0 && do_save_vals < 3 && save_i >= 1024*2) {
+		printf("saved full!!!!\n");
+		do_save_vals = 99;
+
+		printf("printing values in 30 sec:\n");
+		mDelay(30*1000);
+
+		printf("start recorded values\n");
+
+		for (int i = 0; i < 1024*2; i++) {
+			printf("%d %d %d %d %d\n", save_values_time[i], save_values_current_motion_page[i], save_values_current_motion_step[i], save_values[i], save_valuesy[i]);
+
+		}
+		printf("end record values\n");
+	}
+}
+
 // Read current pose and command the servos to go to the current pose + offset to hips and ankles
 // non blocking.
 // return: 0 on successful execution
 int lean_left_right(s16 amount) {
-	//u16 current_pose[NUM_AX12_SERVOS];
-	// read current pose
-	//for (int i = 0; i < NUM_AX12_SERVOS; i++) {
-	//	current_pose[i] = dxl_read_word(AX12_IDS[i], DXL_PRESENT_POSITION_L);
-	//}
-
-	// apply offsets
-	//resetJointOffsets();
-//	setJointOffsetById(9, amount);
-//	setJointOffsetById(10, amount);
-//	setJointOffsetById(17, amount);
-//	setJointOffsetById(18, amount);
-//	return moveToGoalPose(time, getCurrentGoalPose(), 0);
 	setJointOffsetById(9, amount);
 	setJointOffsetById(10, amount);
 	setJointOffsetById(17, amount);
@@ -469,7 +451,7 @@ int lean_left_right(s16 amount) {
 	return 0;
 }
 
-
+// Helper function to compare the old and new motion loading methods.
 void _test_load_motions(int mp) {
 	u32 t0 = micros();
 	printf(" Load motion page %d (old method)...\n", mp);
@@ -488,7 +470,7 @@ void _test_load_motions(int mp) {
 	printf("New method took %u us\n", t1);
 }
 
-// use this to check that the new motion unpacker works the same as the old one.
+// Use this to check that the new motion unpacker works the same as the old one.
 // need to set use_old_motions_code in motion_f.h to 1 for comparision to be useful.
 void test_load_motions() {
 	printf("--- test_load_motions --- \n");
@@ -526,6 +508,7 @@ void dxl_test2() {
 	executeMotion(25); // sit down again
 }
 
+/* Tests for timing and delay functions. */
 void testTimeFns() {
 	printf("Testing time.h functions, delaying 1000 ms...");
 	u32 t0 = millis();
@@ -553,6 +536,7 @@ void testTimeFns() {
 }
 
 void testAbsFn() {
+	// we actually have abs as it is implemented in the compiler...
 	printf("Testing abs on 1 and -1: %d, %d \n", abs(1), abs(-1));
 }
 
@@ -560,9 +544,12 @@ void testAbsFn() {
  * Used in the custom printf function. */
 void _serial_putc ( void* p, char c)
 {
+#if NO_PRINTF
+#else
 	if (c == '\n') // prepend a \r for each \n printed. Because our console likes that.
 		TxDByte_PC('\r');
 	TxDByte_PC(c);
+#endif
 }
 
 

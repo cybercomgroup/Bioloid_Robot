@@ -73,7 +73,7 @@ tmp = arange(0, 100, 0.1)
 tmp_dt = 0.1
 tmp[0] = 8
 for i in range(1, len(tmp)):
-    tmp[i] = tmp[i-1] - 440*tmp[i-1]/10000 / (1.0/tmp_dt)
+    tmp[i] = tmp[i-1] - tmp[i-1]*440/10000 * tmp_dt
 plot(arange(0, 100, 0.1), tmp)
 
 
@@ -81,8 +81,8 @@ tmp2 = arange(0, 100, 0.1)
 tmp_dt = 0.1
 tmp2[0] = 8
 for i in range(1, len(tmp2)):
-    tmp2[i] = tmp2[i-1] - 429*tmp2[i-1]/10000 / (1.0/tmp_dt)
-plot(arange(0, 100, 0.1), tmp2, label=)
+    tmp2[i] = tmp2[i-1] - tmp2[i-1]*429/10000 * tmp_dt
+plot(arange(0, 100, 0.1), tmp2)
 
 legend(loc='upper left')
 
@@ -93,7 +93,7 @@ tmpx = arange(0, 100, 0.1)
 tmp_dt = 0.1
 tmpx[0] = 1100
 for i in range(1, len(tmpx)): 
-    tmpx[i] = tmpx[i-1] + tmp[i] / 10.0
+    tmpx[i] = tmpx[i-1] + tmp[i] * tmp_dt
     
 plot(arange(0, 100, 0.1) - 2, tmpx)
 plot(arange(0, 100, 0.1) - 1, tmpx)
@@ -103,7 +103,7 @@ tmp_dt = 0.1
 tmpy = arange(0, 100, tmp_dt)
 tmpy[0] = 1100
 for i in range(1, len(tmpy)): 
-    tmpy[i] = tmpy[i-1] + tmp2[i] / (1/tmp_dt)
+    tmpy[i] = tmpy[i-1] + tmp2[i] * tmp_dt
 
 plot(arange(0, 100, 0.1) - 3, tmpy)
 plot(arange(0, 100, 0.1) - 8.5, tmpy)
@@ -118,6 +118,30 @@ for i in range(1, len(tmpy)):
 #plot(arange(0, 100, 0.1) - 3, tmpy)
 #plot(arange(0, 100, 0.1) - 8.5, tmpy)
 
+figure(3)
+
+## plot an x curve and corresponding predicted x curve
+
+plot(t1, x1, label='actual x1')
+
+
+# below is work in progress!! 
+
+pred_x1 = zeros(len(t1))
+dx = 0 # sample some values to determine starting dx
+sampling_time = 1 # collect samples for 1 second
+
+it = argmax(t1 - t1[0] > sampling_time)
+dx = x1[it] - x1[0]
+pred_x1[it] = x1[it]
+
+for i in range(it+1, len(t1)):
+    dt = t1[i] - t1[i-1]
+    dx = dx - dx*440/10000 * dt # delta of x in per second
+    pred_x1[i] = pred_x1[i-1] + dx * dt
+plot(t1, pred_x1, label='predicted x1')
+
+legend(loc='upper left')
 
 show()
 

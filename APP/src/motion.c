@@ -49,6 +49,7 @@ uint8 exit_flag = 0;					// flag indicating we are on an exit page
 uint8 last_joint_flex[NUM_AX12_SERVOS];		// last set of joint flex values
 // timing variables
 unsigned long step_start_time = 0, step_finish_time = 0, block_time = 0;
+u32 current_motion_start_time = 0;
 
 // Global variables related to the finite state machine that governs execution
 extern volatile uint8 bioloid_command;			// current command
@@ -107,15 +108,12 @@ void motionPageInit()
 //			printf("\nNumber of active motion pages does not match motion.h. ABORT!\n");
 //			exit(-1);
 //	}
-
-	// set the initial motion state
-	motion_state = MOTION_STOPPED;
 	
 	// Commented code below is deprecated and could be removed
 
 
 #if use_old_motions_code
-
+// NOTE this is legacy code, but some code is commented because we dont support all motion pages.
 	// Motion Page pointer assignment to PROGMEM 
 	motion_pointer[0] = 0;
 	motion_pointer[1] = (void*) &MotionPage1;
@@ -600,6 +598,7 @@ uint8 executeMotionSequence()
 			// unpack the new motion page and start the motion
 			unpackMotion(next_motion_page);
 			current_motion_page = next_motion_page;
+			current_motion_start_time = millis();
 			next_motion_page = 0;
 			// also need to set walk state if it's a walk command
 			if ( bioloid_command >= COMMAND_WALK_FORWARD && bioloid_command < COMMAND_WALK_READY ) {
@@ -981,7 +980,7 @@ int executeMotion(int StartPage)
 	}
 	
 	total_time = millis() - total_time; 
-	
+
 	// TEST: printf("\nMotion %i Timing :", StartPage);
 	// TEST: for (int s=0; s<CurrentMotion.Steps; s++) { printf(" %lu,", step_times[s]); }
 	// TEST: printf(" Total: %lu", total_time);
@@ -1013,6 +1012,13 @@ void setNewMotionCommand(int motionPageId) {
 	bioloid_command = COMMAND_MOTIONPAGE;
 	next_motion_page = motionPageId;
 	new_command = 1;
+}
+
+/* Get the timestamp (as given by millis()) for when the current motion page started.
+ * If no motion page is currently executing, return time stamp of when last executed motion page started executing.
+ * If no motion has been executed yet, return 0. */
+u32 getCurrentMotionStartTime() {
+	return current_motion_start_time;
 }
 
 // for debugging
