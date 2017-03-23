@@ -524,6 +524,7 @@ uint8 executeMotionSequence()
 			comm_status = dxl_write_byte(BROADCAST_ID, DXL_TORQUE_ENABLE, 0);
 			motion_state = MOTION_ALARM;
 		}
+		current_motion_start_time = millis();
 		
 		// either way we are finished here - return
 		return motion_state;
@@ -666,7 +667,7 @@ void unpackMotion2(int StartPage) {
 		for (i = 0; i < NUM_AX12_SERVOS; i++) {
 			CurrentMotion.StepValues[step][i] = motion->steps[step].joint_pos[i+1];
 
-			if ( CurrentMotion.StepValues[step][i] > SERVO_MAX_VALUES[i] || CurrentMotion.StepValues[step][i] < SERVO_MIN_VALUES[i] )
+			if ( CurrentMotion.StepValues[step][i] > 1023 )
 			{
 				// obviously have unpacked rubbish, stop right here
 				printf("\nUnpack Motion Page %i, Step %i - rubbish data. STOP.", StartPage, step+1);

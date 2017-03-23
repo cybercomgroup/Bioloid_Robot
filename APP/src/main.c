@@ -169,8 +169,18 @@ int controller_read_input(void) {
 			demo_walk_and_grab = 0;
 		}
 
-		if (rc100_get_btn_change_state(RC100_BTN_5) == STATE_PRESSED) {
+		if (rc100_get_btn_state(RC100_BTN_5) == STATE_PRESSED && rc100_get_btn_state(RC100_BTN_6) == STATE_PRESSED) {
+
+		}
+
+		else if (rc100_get_btn_change_state(RC100_BTN_5) == STATE_PRESSED) {
 			startMotionIfIdle(227);
+		}
+		else if (rc100_get_btn_change_state(RC100_BTN_6) == STATE_PRESSED) {
+		}
+
+		else if (rc100_get_btn_change_state(RC100_BTN_6) == STATE_PRESSED) {
+			startMotionIfIdle(230); // dance
 		}
 		else if (rc100_get_btn_change_state(RC100_BTN_6) == STATE_PRESSED) {
 		}

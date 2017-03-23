@@ -20,8 +20,9 @@
 const uint8 AX12_ENABLED[MAX_AX12_SERVOS] = {0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0}; 
 
 // Min and max values for the servo values
-const uint16 SERVO_MAX_VALUES[18] = {833,856,770,898,537,868,512,743,541,775,640,968,524,1015,850,601,572,729};
-const uint16 SERVO_MIN_VALUES[18] = {166,190,145,253,155,486,280,512,248,482,49,383,28,499,422,181,294,444};
+// Note these values are based on the old generated stucts. Doesnt work with the new direct motion unpacking method.
+const uint16 SERVO_MAX_VALUES[18] = {800,1023,820, 898,850,850,512,743,541,775,640,968,524,1015,850,601,572,729};
+const uint16 SERVO_MIN_VALUES[18] = {0,200,130, 253,167,213,280,512,248,482,49,383,28,499,422,181,294,444};
 
 typedef struct {
 	u16 joint_pos[26];

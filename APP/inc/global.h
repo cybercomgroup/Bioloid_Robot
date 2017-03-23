@@ -43,10 +43,10 @@ extern "C" {
 
 // Robot specific definitions:
 // Number of Dynamixel actuators (see also main program for ID's)
-// Number of motion pages in the motion file (and motion.h)
+// Number of motion pages in the motion file
 #ifdef HUMANOID_TYPEA
 	#define NUM_AX12_SERVOS		18
-	#define	NUM_MOTION_PAGES	227
+	#define	NUM_MOTION_PAGES	255
 #endif
 #ifdef HUMANOID_TYPEB
 	#define NUM_AX12_SERVOS		16
